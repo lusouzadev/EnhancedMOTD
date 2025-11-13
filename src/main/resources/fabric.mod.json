@@ -6,11 +6,11 @@
   "name": "RandomMOTD",
   "description": "Make your server pop from the multiplayer window with a randomized Message of the Day",
   "authors": [
-    "FireNH"
+    "lusouzadev"
   ],
   "contact": {
-    "homepage": "https://modrinth.com/mod/RandomMOTD",
-    "sources": "https://github.com/firenh/random_motd/"
+    "homepage": "",
+    "sources": ""
   },
 
   "license": "LGPL-3.0",
@@ -19,7 +19,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "fireopal.randommotd.RandomMotd"
+      "lusouzadev.randommotd.RandomMotd"
     ]
   },
   "mixins": [

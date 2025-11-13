@@ -1,4 +1,4 @@
-package fireopal.randommotd;
+package lusouzadev.randommotd;
 
 import java.io.BufferedWriter;
 import java.io.FileReader;

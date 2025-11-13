@@ -1,4 +1,4 @@
-package fireopal.randommotd;
+package lusouzadev.randommotd;
 
 public class FOModVersion {
     public final int major;

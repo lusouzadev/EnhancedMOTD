@@ -1,11 +1,11 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "fireopal.randommotd.mixin",
+  "package": "lusouzadev.randommotd.mixin",
   "compatibilityLevel": "JAVA_17",
+  "refmap": "random_motd.refmap.json",
   "mixins": [
-    "QueryResponseS2CPacketMixin",
-    "ReloadCommandMixin"
+    "StatusResponsePacketMixin"
   ],
   "injectors": {
     "defaultRequire": 1
