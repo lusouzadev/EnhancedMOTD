@@ -17,10 +17,10 @@ import com.google.common.base.Preconditions;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.status.ServerStatus;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(RandomMotd.MODID)
 public class RandomMotd {
@@ -38,8 +38,8 @@ public class RandomMotd {
 		// Register the setup method for mod loading
 		modEventBus.addListener(this::setup);
 
-		// Register our event handler to the Forge event bus
-		MinecraftForge.EVENT_BUS.register(new ServerEventHandler());
+		// Register our event handler to the NeoForge event bus
+		NeoForge.EVENT_BUS.register(new ServerEventHandler());
 	}
 
 	private void setup(final FMLCommonSetupEvent event) {

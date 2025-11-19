@@ -1,8 +1,8 @@
 package lusouzadev.randommotd;
 
-import net.minecraftforge.event.CommandEvent;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.CommandEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 /**
  * Event handler to handle config reloading.

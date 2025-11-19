@@ -1,45 +1,54 @@
 package lusouzadev.randommotd.mixin;
 
 import lusouzadev.randommotd.RandomMotd;
-import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
+import net.minecraft.server.network.ServerStatusPacketListenerImpl;
+import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket;
 import net.minecraft.network.protocol.status.ServerStatus;
+import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 import java.util.Optional;
 
 /**
- * Mixin to intercept status response packets and replace MOTD/icon with random values.
- * This is the NeoForge/Forge equivalent of QueryResponseS2CPacketMixin from Fabric.
+ * Mixin to intercept status requests and modify the ServerStatus before it's sent to the client.
+ * This targets the ServerStatusPacketListenerImpl.handleStatusRequest method where it sends the response packet.
  */
-@Mixin(ClientboundStatusResponsePacket.class)
+@Mixin(ServerStatusPacketListenerImpl.class)
 public class StatusResponsePacketMixin {
+
     @Shadow
     @Final
-    @Mutable
     private ServerStatus status;
 
-    @Inject(at = @At("RETURN"), method = "<init>(Lnet/minecraft/network/protocol/status/ServerStatus;)V")
-    private void onInit(ServerStatus status, CallbackInfo ci) {
+    @ModifyArg(
+        method = "handleStatusRequest",
+        at = @At(value = "INVOKE", target = "Lnet/minecraft/network/Connection;send(Lnet/minecraft/network/protocol/Packet;)V"),
+        index = 0
+    )
+    private net.minecraft.network.protocol.Packet<?> modifyStatusPacket(net.minecraft.network.protocol.Packet<?> packet) {
         try {
-            // In 1.20.1, ServerStatus constructor has 6 parameters
-            ServerStatus newStatus = new ServerStatus(
-                RandomMotd.getRandomMotd(),                                                    // description
-                status.players(),                                                              // players
-                status.version(),                                                              // version
-                RandomMotd.useRandomIcons() ? Optional.of(RandomMotd.getRandomIcon()) : status.favicon(), // favicon
-                status.enforcesSecureChat(),                                                   // enforcesSecureChat
-                Optional.empty()                                                               // forgeData (empty for now)
-            );
+            if (packet instanceof ClientboundStatusResponsePacket) {
+                RandomMotd.LOGGER.info("StatusResponsePacketMixin is being applied!");
 
-            this.status = newStatus;
+                // Create a modified status with random MOTD
+                ServerStatus newStatus = new ServerStatus(
+                    RandomMotd.getRandomMotd(),                                                     // description
+                    this.status.players(),                                                          // players
+                    this.status.version(),                                                          // version
+                    RandomMotd.useRandomIcons() ? Optional.of(RandomMotd.getRandomIcon()) : this.status.favicon(),   // favicon
+                    this.status.enforcesSecureChat()                                               // enforcesSecureChat
+                );
+
+                RandomMotd.LOGGER.info("Successfully modified server status with random MOTD");
+                return new ClientboundStatusResponsePacket(newStatus);
+            }
         } catch (Throwable e) {
             RandomMotd.LOGGER.error("Failed to modify server status packet", e);
         }
+        return packet;
     }
 }
