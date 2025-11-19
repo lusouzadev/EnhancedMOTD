@@ -4,7 +4,28 @@ plugins {
     id 'net.neoforged.gradle.userdev' version '7.0.168'
 }
 
-version = project.mod_version
+// Automated versioning from Git tags
+// Tag format: v1.1.0+neoforge-1.21.1 or v1.1.0+fabric-1.21.1
+// JAR output: random-motd-1.1.0+neoforge-1.21.1.jar
+def getVersionFromGit() {
+    try {
+        // Try to get the exact tag at current commit
+        def process = 'git describe --tags --exact-match'.execute()
+        process.waitFor()
+        if (process.exitValue() == 0) {
+            def tag = process.text.trim()
+            // Remove 'v' prefix if present (v1.1.0+neoforge-1.21.1 -> 1.1.0+neoforge-1.21.1)
+            return tag.startsWith('v') ? tag.substring(1) : tag
+        }
+    } catch (Exception e) {
+        // Git command failed or not in a git repo
+    }
+
+    // Fallback: use version from gradle.properties
+    return project.mod_version
+}
+
+version = getVersionFromGit()
 group = project.maven_group
 
 base {
