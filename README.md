@@ -1,4 +1,4 @@
-# <img src="https://github.com/lusouzadev/EnhancedMOTD/blob/master/img/logo/line/400x156.png?raw=true" width="400" height="156" title="EnhancedMOTD" alt="Mod logo with mod name in a straight line"/>
+![Mod logo with mod name in a straight line](https://raw.githubusercontent.com/lusouzadev/EnhancedMOTD/refs/heads/master/img/logo/line/400x156.png)
 
 ## Features
 
