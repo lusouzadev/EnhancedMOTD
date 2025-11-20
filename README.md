@@ -92,6 +92,59 @@ The Config file, found in `./config/enhanced_motd.json`, includes several option
 - Java 21+
 - Server-side only
 
+## Development
+
+### Commit Message Convention
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for automated versioning and release notes. Please format your commits as:
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer]
+```
+
+**Types:**
+- `feat:` - New feature (triggers minor version bump)
+- `fix:` - Bug fix (triggers patch version bump)
+- `perf:` - Performance improvement (triggers patch version bump)
+- `refactor:` - Code refactoring (triggers patch version bump)
+- `docs:` - Documentation only changes
+- `style:` - Code style/formatting changes
+- `test:` - Adding or updating tests
+- `build:` - Build system or dependency changes
+- `ci:` - CI/CD configuration changes
+- `chore:` - Other changes that don't modify src or test files
+
+**Breaking Changes:**
+Add `BREAKING CHANGE:` in the commit footer to trigger a major version bump:
+```
+feat: new API structure
+
+BREAKING CHANGE: API endpoints have been restructured
+```
+
+**Examples:**
+```
+feat(motd): add support for multi-line gradients
+fix(config): prevent crash when icons array is empty
+docs(readme): update installation instructions
+```
+
+When you push commits to any of the versioned branches (`neoforge/1.21.x`, `fabric/1.20.x`, etc.), the semantic release workflow will automatically:
+1. Analyze your commits
+2. Determine the next version number
+3. Create a tag with the appropriate version
+4. Generate release notes
+5. Trigger the build and release workflow
+
+**Concurrency Handling:**
+- Multiple pushes to the same branch are **queued and processed sequentially** to prevent version conflicts
+- Each branch can release independently (different branches can release in parallel)
+- If two developers push simultaneously, the second release waits for the first to complete, then analyzes all new commits
+
 ---
 
-_Based on the original Fabric mod, ported to NeoForge with enhanced gradient support_
+_Based on the original_ [RandomMOTD](https://github.com/firenh/random_motd) _fabric mod, ported to NeoForge with enhanced gradient support_

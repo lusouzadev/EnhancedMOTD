@@ -3,20 +3,35 @@ package lusouzadev.enhancedmotd;
 public class FOModVersion {
     public final int major;
     public final int minor;
-    public final int patch;   
-    
+    public final int patch;
+    public final String suffix;  // e.g., "+neoforge-1.21.x"
+
     public FOModVersion(int major, int minor, int patch) {
         this.major = major;
         this.minor = minor;
         this.patch = patch;
+        this.suffix = "";
     }
 
     public FOModVersion(String version) {
-        boolean index0 = false;
-        int[] indexes = new int[2]; 
+        // Extract suffix if present (e.g., "1.0.0+neoforge-1.21.x" -> "+neoforge-1.21.x")
+        String versionCore = version;
+        String versionSuffix = "";
 
-        for (int i = 0; i < version.length(); i += 1) {
-            if (version.charAt(i) == '.') {
+        int plusIndex = version.indexOf('+');
+        if (plusIndex != -1) {
+            versionCore = version.substring(0, plusIndex);
+            versionSuffix = version.substring(plusIndex);
+        }
+
+        this.suffix = versionSuffix;
+
+        // Parse semantic version (major.minor.patch)
+        boolean index0 = false;
+        int[] indexes = new int[2];
+
+        for (int i = 0; i < versionCore.length(); i += 1) {
+            if (versionCore.charAt(i) == '.') {
                 if (!index0) {
                     indexes[0] = i;
                     index0 = true;
@@ -26,9 +41,9 @@ public class FOModVersion {
             }
         }
 
-        this.major = substringToInt(version, 0, indexes[0]);
-        this.minor = substringToInt(version, indexes[0] + 1, indexes[1]);
-        this.patch = substringToInt(version, indexes[1] + 1, version.length());
+        this.major = substringToInt(versionCore, 0, indexes[0]);
+        this.minor = substringToInt(versionCore, indexes[0] + 1, indexes[1]);
+        this.patch = substringToInt(versionCore, indexes[1] + 1, versionCore.length());
     }
 
     private static int substringToInt(String str, int index1, int index2) {
@@ -38,7 +53,7 @@ public class FOModVersion {
     }
     
     public String toString() {
-        return major + "." + minor + "." + patch;
+        return major + "." + minor + "." + patch + suffix;
     }
 
     public static FOModVersion fromString(String version) {
