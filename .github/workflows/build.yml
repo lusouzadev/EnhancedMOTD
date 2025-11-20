@@ -10,12 +10,10 @@ on:
     branches:
       - 'neoforge/**'
       - 'fabric/**'
-      - master
   pull_request:
     branches:
       - 'neoforge/**'
       - 'fabric/**'
-      - master
 
 jobs:
   build:
