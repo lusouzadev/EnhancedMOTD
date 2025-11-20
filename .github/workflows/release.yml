@@ -72,7 +72,7 @@ jobs:
           prerelease: false
           name: ${{ steps.version_info.outputs.version }}
           body: |
-            **Random MOTD ${{ steps.version_info.outputs.mod_version }}**
+            **Enhanced MOTD ${{ steps.version_info.outputs.mod_version }}**
 
             - Loader: **${{ steps.version_info.outputs.loader }}**
             - Minecraft: **${{ steps.version_info.outputs.mc_version }}**
@@ -101,7 +101,7 @@ jobs:
       #     modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
       #
       #     files: ${{ steps.find_jar.outputs.jar_file }}
-      #     name: Random MOTD ${{ steps.version_info.outputs.version }}
+      #     name: Enhanced MOTD ${{ steps.version_info.outputs.version }}
       #     version: ${{ steps.version_info.outputs.version }}
       #     version-type: release
       #

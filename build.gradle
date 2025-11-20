@@ -1,75 +1,134 @@
 plugins {
-	id 'fabric-loom' version '0.12-SNAPSHOT'
-	id 'maven-publish'
+    id 'java'
+    id 'maven-publish'
+    id 'net.neoforged.gradle.userdev' version '7.0.168'
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+// Automated versioning from Git tags
+// Tag format: v1.1.0+neoforge-1.21.1 or v1.1.0+fabric-1.21.1
+// JAR output: enhanced-motd-1.1.0+neoforge-1.21.1.jar
+def getVersionFromGit() {
+    try {
+        // Try to get the exact tag at current commit
+        def process = 'git describe --tags --exact-match'.execute()
+        process.waitFor()
+        if (process.exitValue() == 0) {
+            def tag = process.text.trim()
+            // Remove 'v' prefix if present (v1.1.0+neoforge-1.21.1 -> 1.1.0+neoforge-1.21.1)
+            return tag.startsWith('v') ? tag.substring(1) : tag
+        }
+    } catch (Exception ignored) {
+        // Git command failed or not in a git repo
+    }
 
-archivesBaseName = project.archives_base_name
-version = project.mod_version
+    // Fallback: use version from gradle.properties
+    return project.mod_version
+}
+
+version = getVersionFromGit()
 group = project.maven_group
 
-repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
+base {
+    archivesName = project.archives_base_name
+}
 
-	maven { url "https://maven.nucleoid.xyz/" }
+// Mojang ships Java 21 to end users in 1.21.1, so your mod should target Java 21.
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    mavenCentral()
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation include("eu.pb4:placeholder-api:${project.placeholder_api_version}")
+    implementation "net.neoforged:neoforge:${neo_version}"
 }
 
-processResources {
-	inputs.property "version", project.version
+runs {
+    configureEach {
+        workingDirectory = project.file('run')
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
 
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
+        modSource project.sourceSets.main
+    }
+
+    client {
+        // Client run configuration
+    }
+
+    server {
+        arguments.add '--nogui'
+    }
+
+    data {
+        arguments.addAll '--mod', project.mod_id,
+            '--all',
+            '--output', file('src/generated/resources/').getAbsolutePath(),
+            '--existing', file('src/main/resources/').getAbsolutePath()
+    }
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties + [project: project]
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
-	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-	it.options.release = 17
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-Xlint:deprecation'
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
-	}
+    from("LICENSE") {
+        rename { "${it}_${project.base.archivesName.get()}"}
+    }
+    manifest {
+        attributes([
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1',
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'MixinConfigs'            : 'enhanced_motd.mixins.json'
+        ])
+    }
 }
 
-// configure the maven publication
 publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			from components.java
-		}
-	}
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+        }
+    }
+    repositories {
+        // Add repositories to publish to here.
+    }
+}
 
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
-	}
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-Xlint:deprecation'
 }

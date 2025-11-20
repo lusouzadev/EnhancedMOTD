@@ -28,11 +28,7 @@ e
 
 *.DS_Store
 
-# fabric
 
+#test
 .run/
-
-# local documentation (not committed)
-BRANCHES.md
-RELEASE.md
-SETUP_COMPLETE.md
+run

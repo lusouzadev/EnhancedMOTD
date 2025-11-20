@@ -1,16 +1,4 @@
-# <img src="https://github.com/firenh/random_motd/blob/master/img/logo_md.png?raw=true" alt="RandomMOTD">
-
-## RandomMOTD ~ Make your server pop from the multiplayer window!
-
-### _Server Side Mod: Does not need installation on client; compatible with vanilla clients!_
-
-<br>
-
-Minecraft Servers have a few precious options available to them to display information on the multiplayer screen--the most important of which are the Server icon and the MOTD, or 'Message of the Day', the two lines of text underneath the server's name giving a descriptor. The problem is, with the MOTD being static, a player may simply not care about what is being displayed as it's typically just the server's name plus a mediocre announcement.
-
-With RandomMOTD, a new MOTD picked randomly from a list can be sent to the player upon each refresh of the multiplayer screen. This can be used in a variety of ways: you could change the styling of the server's name on every refresh, add easter eggs below the server's name, or cycle through various server announcements. In the config MOTDs are a list of lists of strings: each MOTD sent to the client picks a random MOTD from each sublist and concatenates them together. This enables servers to include both static information and randomized information, such as having the server name on the top line and an easter egg on the bottom line.
-
-RandomMOTD also has one more optional feature: randomized server icons. These are on by default, and allow for multiple server icons that are updated with every refresh. These can be used to create variants of the server icon, or just full-on randomized pictures. There is no limit to the amount of MOTDs and icons one can add.
+# <img src="https://github.com/lusouzadev/EnhancedMOTD/blob/master/imge/logo/line/400x156.png?raw=true" width="400" height="156" title="EnhancedMOTD" alt="Mod logo with mod name in a straight line"/>
 
 ## Features
 
@@ -51,18 +39,18 @@ Place formatting codes **before** gradient tags:
 
 <details>
     <summary>Config</summary>
-The Config file, found in `./config/random_motd.json`, includes several options. The config can be reloaded by running the `/reload` command in-game. (Does not modify the vanilla `/reload` command, just hooks on to it).
+The Config file, found in `./config/enhanced_motd.json`, includes several options. The config can be reloaded by running the `/reload` command in-game. (Does not modify the vanilla `/reload` command, just hooks on to it).
 <br>
 
-* `"motds"`: A list of lists of possible MOTDs. The mod will pick a random MOTD from every part of the list and concatenate them, producing a full MOTD. This feature is mainly so, if you would like to contain a static part of information independent from a random one, you can.
+* `"motds"`: A list of possible MOTDs lists! The mod will pick a random MOTD from every part of the list and concatenate them, producing a full MOTD. This feature is mainly so if you would like to contain a static part of information independent of a random one.
 
 * `"use_randomized_icons"`: A boolean either enabling or disabling the randomized icon feature. Defaults to `true`.
 
 * `"icons"`: A list of paths to server icons. Much like default server icons, they must be 64x64 PNG images.
 
-* `"log_when_loaded"`: A boolean telling whether or not to log for every reload. Off by default.
+* `"log_when_loaded"`: A boolean telling whether to log for every reload. Off by default.
 
-* `"CONFIG_VERSION_DO_NOT_TOUCH_PLS"`: Mod version--please do not touch it.
+* `"CONFIG_VERSION_DO_NOT_TOUCH_PLS"`: Mod version --please do not touch it.
 
 ### Example Config
 ```json
@@ -95,12 +83,12 @@ The Config file, found in `./config/random_motd.json`, includes several options.
 1. Download the mod JAR from the releases
 2. Place it in your server's `mods` folder
 3. Start the server - it will generate a default config
-4. Edit `config/random_motd.json` to customize your MOTDs
+4. Edit `config/enhanced_motd.json` to customize your MOTDs
 5. Use `/reload` to apply changes without restarting
 
 ## Requirements
 
-- NeoForge 21.1+ for Minecraft 1.21.1
+- NeoForge 21.1+ for Minecraft 1.21.x
 - Java 21+
 - Server-side only
 

@@ -1,4 +1,4 @@
-package fireopal.randommotd;
+package lusouzadev.enhancedmotd;
 
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -16,11 +16,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class Config {
-    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     //Config Default Values
 
-    public String CONFIG_VERSION_DO_NOT_TOUCH_PLS = RandomMotd.VERSION.toString();
+    public String CONFIG_VERSION_DO_NOT_TOUCH_PLS = EnhancedMotd.VERSION.toString();
 
     public List<List<String>> motds = defaultSimpleMotds();
     public boolean use_randomized_icons = true;
@@ -32,8 +32,8 @@ public class Config {
         
         List<String> motds_0 = new ArrayList<>();
         Collections.addAll(motds_0,
-            "RandomMOTD",
-            "<rb>RandomMOTD</rb>"
+            "EnhancedMOTD",
+            "<rb>EnhancedMOTD</rb>"
         );
         motds.add(motds_0);
 
@@ -60,7 +60,7 @@ public class Config {
         Config config = null;
 
         try {
-            Path configPath = Paths.get("", "config", RandomMotd.MODID + ".json");
+            Path configPath = Paths.get("", "config", EnhancedMotd.MODID + ".json");
 
             if (Files.exists(configPath)) {
                 config = gson.fromJson(
@@ -68,8 +68,8 @@ public class Config {
                     Config.class
                 );
 
-                if (!config.CONFIG_VERSION_DO_NOT_TOUCH_PLS.equals(RandomMotd.VERSION.toString())) {
-                    config.CONFIG_VERSION_DO_NOT_TOUCH_PLS = RandomMotd.VERSION.toString();
+                if (!config.CONFIG_VERSION_DO_NOT_TOUCH_PLS.equals(EnhancedMotd.VERSION.toString())) {
+                    config.CONFIG_VERSION_DO_NOT_TOUCH_PLS = EnhancedMotd.VERSION.toString();
 
                     BufferedWriter writer = new BufferedWriter(
                         new FileWriter(configPath.toFile())
