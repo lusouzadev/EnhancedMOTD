@@ -1,8 +1,7 @@
-package lusouzadev.randommotd.mixin;
+package lusouzadev.enhancedmotd.mixin;
 
-import lusouzadev.randommotd.RandomMotd;
+import lusouzadev.enhancedmotd.EnhancedMotd;
 import net.minecraft.server.network.ServerStatusPacketListenerImpl;
-import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
 import org.spongepowered.asm.mixin.Final;
@@ -32,22 +31,23 @@ public class StatusResponsePacketMixin {
     private net.minecraft.network.protocol.Packet<?> modifyStatusPacket(net.minecraft.network.protocol.Packet<?> packet) {
         try {
             if (packet instanceof ClientboundStatusResponsePacket) {
-                RandomMotd.LOGGER.info("StatusResponsePacketMixin is being applied!");
+                EnhancedMotd.LOGGER.info("StatusResponsePacketMixin is being applied!");
 
                 // Create a modified status with random MOTD
                 ServerStatus newStatus = new ServerStatus(
-                    RandomMotd.getRandomMotd(),                                                     // description
+                    EnhancedMotd.getEnhancedMotd(),                                                     // description
                     this.status.players(),                                                          // players
                     this.status.version(),                                                          // version
-                    RandomMotd.useRandomIcons() ? Optional.of(RandomMotd.getRandomIcon()) : this.status.favicon(),   // favicon
-                    this.status.enforcesSecureChat()                                               // enforcesSecureChat
+                    EnhancedMotd.useRandomIcons() ? Optional.of(EnhancedMotd.getRandomIcon()) : this.status.favicon(),   // favicon
+                    this.status.enforcesSecureChat(),                                               // enforcesSecureChat
+                    this.status.isModded()                                                          // isModded
                 );
 
-                RandomMotd.LOGGER.info("Successfully modified server status with random MOTD");
+                EnhancedMotd.LOGGER.info("Successfully modified server status with random MOTD");
                 return new ClientboundStatusResponsePacket(newStatus);
             }
         } catch (Throwable e) {
-            RandomMotd.LOGGER.error("Failed to modify server status packet", e);
+            EnhancedMotd.LOGGER.error("Failed to modify server status packet", e);
         }
         return packet;
     }

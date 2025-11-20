@@ -1,4 +1,4 @@
-package lusouzadev.randommotd;
+package lusouzadev.enhancedmotd;
 
 public class FOModVersion {
     public final int major;
@@ -31,7 +31,7 @@ public class FOModVersion {
         this.patch = substringToInt(version, indexes[1] + 1, version.length());
     }
 
-    private static final int substringToInt(String str, int index1, int index2) {    
+    private static int substringToInt(String str, int index1, int index2) {
         return Integer.parseInt(
             str.substring(index1, index2)
         );

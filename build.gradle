@@ -6,7 +6,7 @@ plugins {
 
 // Automated versioning from Git tags
 // Tag format: v1.1.0+neoforge-1.21.1 or v1.1.0+fabric-1.21.1
-// JAR output: random-motd-1.1.0+neoforge-1.21.1.jar
+// JAR output: enhanced-motd-1.1.0+neoforge-1.21.1.jar
 def getVersionFromGit() {
     try {
         // Try to get the exact tag at current commit
@@ -17,7 +17,7 @@ def getVersionFromGit() {
             // Remove 'v' prefix if present (v1.1.0+neoforge-1.21.1 -> 1.1.0+neoforge-1.21.1)
             return tag.startsWith('v') ? tag.substring(1) : tag
         }
-    } catch (Exception e) {
+    } catch (Exception ignored) {
         // Git command failed or not in a git repo
     }
 
@@ -57,7 +57,7 @@ runs {
     }
 
     server {
-        programArgument '--nogui'
+        arguments.add '--nogui'
     }
 
     data {
@@ -112,7 +112,7 @@ jar {
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
                 'Implementation-Vendor'   : mod_authors,
-                'MixinConfigs'            : 'random_motd.mixins.json'
+                'MixinConfigs'            : 'enhanced_motd.mixins.json'
         ])
     }
 }

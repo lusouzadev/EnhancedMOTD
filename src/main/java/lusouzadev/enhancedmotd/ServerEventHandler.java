@@ -1,4 +1,4 @@
-package lusouzadev.randommotd;
+package lusouzadev.enhancedmotd;
 
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.CommandEvent;
@@ -16,7 +16,7 @@ public class ServerEventHandler {
      */
     @SubscribeEvent
     public void onServerStarted(ServerStartedEvent event) {
-        RandomMotd.log("Server started, config loaded");
+        EnhancedMotd.log("Server started, config loaded");
     }
 
     /**
@@ -29,10 +29,10 @@ public class ServerEventHandler {
         // Check if this is a reload command
         if (command.startsWith("reload")) {
             try {
-                RandomMotd.log("Reloading RandomMOTD config due to /reload command");
-                RandomMotd.loadConfigFromFile();
+                EnhancedMotd.log("Reloading EnhancedMOTD config due to /reload command");
+                EnhancedMotd.loadConfigFromFile();
             } catch (Exception e) {
-                RandomMotd.log("Failed to reload config: " + e.getMessage());
+                EnhancedMotd.log("Failed to reload config: " + e.getMessage());
             }
         }
     }

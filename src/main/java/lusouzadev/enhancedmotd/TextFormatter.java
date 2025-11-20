@@ -1,4 +1,4 @@
-package lusouzadev.randommotd;
+package lusouzadev.enhancedmotd;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -37,7 +37,7 @@ public class TextFormatter {
     private static String processGradients(String text) {
         // Process custom gradients first
         Matcher gradientMatcher = GRADIENT_PATTERN.matcher(text);
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
 
         while (gradientMatcher.find()) {
             String startHex = gradientMatcher.group(1);
@@ -51,7 +51,7 @@ public class TextFormatter {
 
         // Process rainbow gradients
         Matcher rainbowMatcher = RAINBOW_PATTERN.matcher(text);
-        result = new StringBuffer();
+        result = new StringBuilder();
 
         while (rainbowMatcher.find()) {
             String content = rainbowMatcher.group(1);
@@ -72,7 +72,7 @@ public class TextFormatter {
 
         while (cleanText.length() >= 2 && cleanText.charAt(0) == '&' &&
                "klmnor".indexOf(cleanText.charAt(1)) >= 0) {
-            formats.append(cleanText.substring(0, 2));
+            formats.append(cleanText, 0, 2);
             cleanText = cleanText.substring(2);
         }
 
@@ -115,7 +115,7 @@ public class TextFormatter {
 
         while (cleanText.length() >= 2 && cleanText.charAt(0) == '&' &&
                "klmnor".indexOf(cleanText.charAt(1)) >= 0) {
-            formats.append(cleanText.substring(0, 2));
+            formats.append(cleanText, 0, 2);
             cleanText = cleanText.substring(2);
         }
 
@@ -177,7 +177,7 @@ public class TextFormatter {
             // Check for hex color code &#RRGGBB
             if (i < text.length() - 8 && text.charAt(i) == '&' && text.charAt(i + 1) == '#') {
                 // Flush current text
-                if (currentText.length() > 0) {
+                if (!currentText.isEmpty()) {
                     component.append(Component.literal(currentText.toString()).setStyle(currentStyle));
                     currentText = new StringBuilder();
                 }
@@ -204,7 +204,7 @@ public class TextFormatter {
                 char code = text.charAt(i + 1);
 
                 // Flush current text
-                if (currentText.length() > 0) {
+                if (!currentText.isEmpty()) {
                     component.append(Component.literal(currentText.toString()).setStyle(currentStyle));
                     currentText = new StringBuilder();
                 }
@@ -217,7 +217,7 @@ public class TextFormatter {
         }
 
         // Flush remaining text
-        if (currentText.length() > 0) {
+        if (!currentText.isEmpty()) {
             component.append(Component.literal(currentText.toString()).setStyle(currentStyle));
         }
 
@@ -225,33 +225,33 @@ public class TextFormatter {
     }
 
     private static Style getStyleForCode(char code, Style currentStyle) {
-        switch (code) {
+        return switch (code) {
             // Color codes - preserve formatting
-            case '0': return currentStyle.withColor(ChatFormatting.BLACK);
-            case '1': return currentStyle.withColor(ChatFormatting.DARK_BLUE);
-            case '2': return currentStyle.withColor(ChatFormatting.DARK_GREEN);
-            case '3': return currentStyle.withColor(ChatFormatting.DARK_AQUA);
-            case '4': return currentStyle.withColor(ChatFormatting.DARK_RED);
-            case '5': return currentStyle.withColor(ChatFormatting.DARK_PURPLE);
-            case '6': return currentStyle.withColor(ChatFormatting.GOLD);
-            case '7': return currentStyle.withColor(ChatFormatting.GRAY);
-            case '8': return currentStyle.withColor(ChatFormatting.DARK_GRAY);
-            case '9': return currentStyle.withColor(ChatFormatting.BLUE);
-            case 'a': return currentStyle.withColor(ChatFormatting.GREEN);
-            case 'b': return currentStyle.withColor(ChatFormatting.AQUA);
-            case 'c': return currentStyle.withColor(ChatFormatting.RED);
-            case 'd': return currentStyle.withColor(ChatFormatting.LIGHT_PURPLE);
-            case 'e': return currentStyle.withColor(ChatFormatting.YELLOW);
-            case 'f': return currentStyle.withColor(ChatFormatting.WHITE);
+            case '0' -> currentStyle.withColor(ChatFormatting.BLACK);
+            case '1' -> currentStyle.withColor(ChatFormatting.DARK_BLUE);
+            case '2' -> currentStyle.withColor(ChatFormatting.DARK_GREEN);
+            case '3' -> currentStyle.withColor(ChatFormatting.DARK_AQUA);
+            case '4' -> currentStyle.withColor(ChatFormatting.DARK_RED);
+            case '5' -> currentStyle.withColor(ChatFormatting.DARK_PURPLE);
+            case '6' -> currentStyle.withColor(ChatFormatting.GOLD);
+            case '7' -> currentStyle.withColor(ChatFormatting.GRAY);
+            case '8' -> currentStyle.withColor(ChatFormatting.DARK_GRAY);
+            case '9' -> currentStyle.withColor(ChatFormatting.BLUE);
+            case 'a' -> currentStyle.withColor(ChatFormatting.GREEN);
+            case 'b' -> currentStyle.withColor(ChatFormatting.AQUA);
+            case 'c' -> currentStyle.withColor(ChatFormatting.RED);
+            case 'd' -> currentStyle.withColor(ChatFormatting.LIGHT_PURPLE);
+            case 'e' -> currentStyle.withColor(ChatFormatting.YELLOW);
+            case 'f' -> currentStyle.withColor(ChatFormatting.WHITE);
             // Formatting codes - preserve color
-            case 'k': return currentStyle.withObfuscated(true);
-            case 'l': return currentStyle.withBold(true);
-            case 'm': return currentStyle.withStrikethrough(true);
-            case 'n': return currentStyle.withUnderlined(true);
-            case 'o': return currentStyle.withItalic(true);
+            case 'k' -> currentStyle.withObfuscated(true);
+            case 'l' -> currentStyle.withBold(true);
+            case 'm' -> currentStyle.withStrikethrough(true);
+            case 'n' -> currentStyle.withUnderlined(true);
+            case 'o' -> currentStyle.withItalic(true);
             // Reset clears everything
-            case 'r': return Style.EMPTY;
-            default: return currentStyle;
-        }
+            case 'r' -> Style.EMPTY;
+            default -> currentStyle;
+        };
     }
 }

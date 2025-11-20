@@ -1,4 +1,4 @@
-package lusouzadev.randommotd;
+package lusouzadev.enhancedmotd;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -20,30 +20,36 @@ import net.minecraft.network.protocol.status.ServerStatus;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.neoforge.common.NeoForge;
 
-@Mod(RandomMotd.MODID)
-public class RandomMotd {
-	public static final String MODID = "random_motd";
+@Mod(EnhancedMotd.MODID)
+public class EnhancedMotd {
+	public static final String MODID = "enhanced_motd";
 	public static final Logger LOGGER = LogUtils.getLogger();
-	public static final FOModVersion VERSION = FOModVersion.fromString("1.1.0");
+	public static FOModVersion VERSION;
 
 	private static Config CONFIG;
-	private static Random random = new Random();
+	private static final Random random = new Random();
 
 	private static String[][] motds;
 	private static ServerStatus.Favicon[] icons;
 
-	public RandomMotd(IEventBus modEventBus) {
+	public EnhancedMotd(IEventBus modEventBus, ModContainer modContainer) {
+		// Get version from mod metadata
+		VERSION = FOModVersion.fromString(modContainer.getModInfo().getVersion().toString());
+
 		// Register the setup method for mod loading
 		modEventBus.addListener(this::setup);
 
 		// Register our event handler to the NeoForge event bus
 		NeoForge.EVENT_BUS.register(new ServerEventHandler());
+
+		LOGGER.info("EnhancedMOTD version: {}", VERSION);
 	}
 
 	private void setup(final FMLCommonSetupEvent event) {
-		LOGGER.info("RandomMOTD initializing...");
+		LOGGER.info("EnhancedMOTD initializing...");
 		loadConfigFromFile();
 	}
 
@@ -51,7 +57,7 @@ public class RandomMotd {
 		return CONFIG;
 	}
 
-	public static Component getRandomMotd() {
+	public static Component getEnhancedMotd() {
 		return getRandomMotd(random);
 	}
 

@@ -7,21 +7,21 @@ modId = "${mod_id}"
 version = "${mod_version}"
 displayName = "${mod_name}"
 displayURL = ""
-logoFile = "random_motd_icon.png"
+logoFile = "enhanced_motd_icon.png"
 authors = "${mod_authors}"
 description = '''${mod_description}'''
 
 [[mixins]]
-config = "random_motd.mixins.json"
+config = "enhanced_motd.mixins.json"
 
-[[dependencies.random_motd]]
+[[dependencies.enhanced_motd]]
 modId = "neoforge"
 type = "required"
 versionRange = "${neo_version_range}"
 ordering = "NONE"
 side = "SERVER"
 
-[[dependencies.random_motd]]
+[[dependencies.enhanced_motd]]
 modId = "minecraft"
 type = "required"
 versionRange = "${minecraft_version_range}"
