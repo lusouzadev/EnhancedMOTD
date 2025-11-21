@@ -4,6 +4,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Random;
@@ -109,27 +112,53 @@ public class EnhancedMotd {
 		ArrayList<ServerStatus.Favicon> list = new ArrayList<>();
 
 		for (String iconPath : CONFIG.icons) {
-			Optional<File> optional = Optional.of(new File(".", iconPath)).filter(File::isFile);
+			try {
+				BufferedImage bufferedImage = null;
 
-			if (optional.isEmpty()) {
-                LOGGER.info("Icon `{}` does not exist!", iconPath);
-				continue;
-			}
+				// Check if the iconPath is an HTTPS URL
+				if (iconPath.toLowerCase().startsWith("https://")) {
+					bufferedImage = loadIconFromUrl(iconPath);
+				} else if (iconPath.toLowerCase().startsWith("http://")) {
+					LOGGER.warn("Icon `{}` uses insecure HTTP protocol. Please use HTTPS instead. Skipping.", iconPath);
+					continue;
+				} else {
+					// Handle as a file path
+					Optional<File> optional = Optional.of(new File(".", iconPath)).filter(File::isFile);
 
-			optional.ifPresent(file -> {
-				try {
-					BufferedImage bufferedImage = ImageIO.read(file);
+					if (optional.isEmpty()) {
+						LOGGER.info("Icon `{}` does not exist!", iconPath);
+						continue;
+					}
+
+					bufferedImage = ImageIO.read(optional.get());
+				}
+
+				if (bufferedImage != null) {
 					Preconditions.checkState(bufferedImage.getWidth() == 64, "Must be 64 pixels wide");
 					Preconditions.checkState(bufferedImage.getHeight() == 64, "Must be 64 pixels high");
 					ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 					ImageIO.write((RenderedImage) bufferedImage, "PNG", byteArrayOutputStream);
 					list.add(new ServerStatus.Favicon(byteArrayOutputStream.toByteArray()));
-				} catch (Exception exception) {
-					LOGGER.error("Couldn't load server icon", exception);
 				}
-			});
+			} catch (Exception exception) {
+				LOGGER.error("Couldn't load server icon from `{}`", iconPath, exception);
+			}
 		}
 
 		icons = list.toArray(ServerStatus.Favicon[]::new);
+	}
+
+	private static BufferedImage loadIconFromUrl(String urlString) throws Exception {
+		URI uri = new URI(urlString);
+
+		// Ensure the protocol is HTTPS
+		if (!"https".equalsIgnoreCase(uri.getScheme())) {
+			throw new IllegalArgumentException("Only HTTPS URLs are allowed for security reasons");
+		}
+
+		URL url = uri.toURL();
+		try (InputStream inputStream = url.openStream()) {
+			return ImageIO.read(inputStream);
+		}
 	}
 }

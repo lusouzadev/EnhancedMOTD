@@ -46,7 +46,7 @@ The Config file, found in `./config/enhanced_motd.json`, includes several option
 
 * `"use_randomized_icons"`: A boolean either enabling or disabling the randomized icon feature. Defaults to `true`.
 
-* `"icons"`: A list of paths to server icons. Much like default server icons, they must be 64x64 PNG images.
+* `"icons"`: A list of paths to server icons or HTTPS URLs. Paths are relative to the server directory. URLs must use HTTPS protocol for security. All icons must be 64x64 PNG images.
 
 * `"log_when_loaded"`: A boolean telling whether to log for every reload. Off by default.
 
@@ -70,7 +70,8 @@ The Config file, found in `./config/enhanced_motd.json`, includes several option
   "use_randomized_icons": true,
   "icons": [
     "server-icon.png",
-    "server-icon-2.png"
+    "server-icon-2.png",
+    "https://dummyimage.com/64x64/000/fff.png&text=Icon3"
   ],
   "log_when_loaded": false
 }
