@@ -1,19 +1,15 @@
 package lusouzadev.enhancedmotd;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 public class FOModVersion {
     public final int major;
     public final int minor;
     public final int patch;
     public final String suffix;  // e.g., "+neoforge-1.21.x"
 
-    public FOModVersion(int major, int minor, int patch) {
-        this.major = major;
-        this.minor = minor;
-        this.patch = patch;
-        this.suffix = "";
-    }
-
-    public FOModVersion(String version) {
+    public FOModVersion(@NotNull String version) {
         // Extract suffix if present (e.g., "1.0.0+neoforge-1.21.x" -> "+neoforge-1.21.x")
         String versionCore = version;
         String versionSuffix = "";
@@ -46,7 +42,7 @@ public class FOModVersion {
         this.patch = substringToInt(versionCore, indexes[1] + 1, versionCore.length());
     }
 
-    private static int substringToInt(String str, int index1, int index2) {
+    private static int substringToInt(@NotNull String str, int index1, int index2) {
         return Integer.parseInt(
             str.substring(index1, index2)
         );
@@ -56,7 +52,8 @@ public class FOModVersion {
         return major + "." + minor + "." + patch + suffix;
     }
 
-    public static FOModVersion fromString(String version) {
+    @Contract("_ -> new")
+    public static @NotNull FOModVersion fromString(String version) {
         return new FOModVersion(version);
     }
 }

@@ -11,6 +11,7 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 
 import com.mojang.logging.LogUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -35,8 +36,8 @@ public class EnhancedMotd {
 	private static String[][] motds;
 	private static ServerStatus.Favicon[] icons;
 
-	public EnhancedMotd(IEventBus modEventBus, ModContainer modContainer) {
-		// Get version from mod metadata
+	public EnhancedMotd(@NotNull IEventBus modEventBus, @NotNull ModContainer modContainer) {
+		// Get a version from mod metadata
 		VERSION = FOModVersion.fromString(modContainer.getModInfo().getVersion().toString());
 
 		// Register the setup method for mod loading
@@ -48,13 +49,9 @@ public class EnhancedMotd {
 		LOGGER.info("EnhancedMOTD version: {}", VERSION);
 	}
 
-	private void setup(final FMLCommonSetupEvent event) {
+	private void setup(final FMLCommonSetupEvent ignoredEvent) {
 		LOGGER.info("EnhancedMOTD initializing...");
 		loadConfigFromFile();
-	}
-
-	public static Config getConfig() {
-		return CONFIG;
 	}
 
 	public static Component getEnhancedMotd() {
@@ -62,20 +59,20 @@ public class EnhancedMotd {
 	}
 
 	public static Component getRandomMotd(Random random) {
-		String s = "";
+		StringBuilder s = new StringBuilder();
 
 		for (String[] w : motds) {
-			s += w[random.nextInt(w.length)];
+			s.append(w[random.nextInt(w.length)]);
 		}
 
-		return TextFormatter.formatText(s);
+		return TextFormatter.formatText(s.toString());
 	}
 
 	public static ServerStatus.Favicon getRandomIcon() {
 		return getRandomIcon(random);
 	}
 
-	public static ServerStatus.Favicon getRandomIcon(Random random) {
+	public static ServerStatus.Favicon getRandomIcon(@NotNull Random random) {
 		LOGGER.info("Getting random icon");
 		return icons[random.nextInt(icons.length)];
 	}
@@ -104,7 +101,7 @@ public class EnhancedMotd {
 
 	private static void cacheMotds() {
 		motds = CONFIG.motds.stream()
-				.map(l -> l.stream().toArray(String[]::new))
+				.map(l -> l.toArray(String[]::new))
 				.toArray(String[][]::new);
 	}
 
@@ -115,7 +112,7 @@ public class EnhancedMotd {
 			Optional<File> optional = Optional.of(new File(".", iconPath)).filter(File::isFile);
 
 			if (optional.isEmpty()) {
-				LOGGER.info("Icon `" + iconPath + "` does not exist!");
+                LOGGER.info("Icon `{}` does not exist!", iconPath);
 				continue;
 			}
 
