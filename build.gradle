@@ -48,8 +48,6 @@ runs {
         workingDirectory = project.file('run')
         systemProperty('forge.logging.markers', 'REGISTRIES')
         systemProperty('forge.logging.console.level', 'debug')
-
-        modSource.set(sourceSets.main)
     }
 
     client {
