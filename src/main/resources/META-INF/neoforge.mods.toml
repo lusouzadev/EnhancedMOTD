@@ -14,14 +14,14 @@ description = '''${mod_description}'''
 [[mixins]]
 config = "enhanced_motd.mixins.json"
 
-[[dependencies.enhanced_motd]]
+[[dependencies."${mod_id}"]]
 modId = "neoforge"
 type = "required"
 versionRange = "${neo_version_range}"
 ordering = "NONE"
 side = "SERVER"
 
-[[dependencies.enhanced_motd]]
+[[dependencies."${mod_id}"]]
 modId = "minecraft"
 type = "required"
 versionRange = "${minecraft_version_range}"

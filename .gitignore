@@ -32,3 +32,6 @@ e
 #test
 .run/
 run
+
+#Code inspection
+qodana.yaml

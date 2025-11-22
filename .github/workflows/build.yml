@@ -5,15 +5,17 @@
 
 name: Build
 
-on:
-  push:
-    branches:
-      - 'neoforge/**'
-      - 'fabric/**'
-  pull_request:
-    branches:
-      - 'neoforge/**'
-      - 'fabric/**'
+# Workflows temporarily disabled
+on: workflow_dispatch
+# on:
+#   push:
+#     branches:
+#       - 'neoforge/**'
+#       - 'fabric/**'
+#   pull_request:
+#     branches:
+#       - 'neoforge/**'
+#       - 'fabric/**'
 
 jobs:
   build:

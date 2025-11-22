@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,8 +15,6 @@ import java.util.regex.Pattern;
  * Supports Minecraft color codes, basic formatting, and gradients.
  */
 public class TextFormatter {
-    private static final Pattern COLOR_PATTERN = Pattern.compile("&([0-9a-fk-or])");
-    private static final Pattern HEX_PATTERN = Pattern.compile("&#([0-9a-fA-F]{6})");
     private static final Pattern RAINBOW_PATTERN = Pattern.compile("<rb>(.*?)</rb>");
     private static final Pattern GRADIENT_PATTERN = Pattern.compile("<gradient:#([0-9a-fA-F]{6}):#([0-9a-fA-F]{6})>(.*?)</gradient>");
 
@@ -34,7 +33,7 @@ public class TextFormatter {
         return parseLegacyText(text);
     }
 
-    private static String processGradients(String text) {
+    private static @NotNull String processGradients(String text) {
         // Process custom gradients first
         Matcher gradientMatcher = GRADIENT_PATTERN.matcher(text);
         StringBuilder result = new StringBuilder();
@@ -63,10 +62,10 @@ public class TextFormatter {
         return result.toString();
     }
 
-    private static String applyRainbow(String text) {
-        if (text.isEmpty()) return text;
+    private record FormattingExtraction(String formats, String cleanText) {
+    }
 
-        // Extract formatting codes from the beginning
+    private static @NotNull FormattingExtraction extractFormatting(@NotNull String text) {
         StringBuilder formats = new StringBuilder();
         String cleanText = text;
 
@@ -75,6 +74,16 @@ public class TextFormatter {
             formats.append(cleanText, 0, 2);
             cleanText = cleanText.substring(2);
         }
+
+        return new FormattingExtraction(formats.toString(), cleanText);
+    }
+
+    private static @NotNull String applyRainbow(@NotNull String text) {
+        if (text.isEmpty()) return text;
+
+        FormattingExtraction extraction = extractFormatting(text);
+        String formats = extraction.formats;
+        String cleanText = extraction.cleanText;
 
         // Rainbow colors: Red -> Orange -> Yellow -> Green -> Blue -> Purple
         String[] rainbowColors = {"FF0000", "FF7F00", "FFFF00", "00FF00", "0000FF", "8B00FF"};
@@ -106,18 +115,12 @@ public class TextFormatter {
         return result.toString();
     }
 
-    private static String applyGradient(String text, String startHex, String endHex) {
+    private static @NotNull String applyGradient(@NotNull String text, String startHex, String endHex) {
         if (text.isEmpty()) return text;
 
-        // Extract formatting codes from the beginning
-        StringBuilder formats = new StringBuilder();
-        String cleanText = text;
-
-        while (cleanText.length() >= 2 && cleanText.charAt(0) == '&' &&
-               "klmnor".indexOf(cleanText.charAt(1)) >= 0) {
-            formats.append(cleanText, 0, 2);
-            cleanText = cleanText.substring(2);
-        }
+        FormattingExtraction extraction = extractFormatting(text);
+        String formats = extraction.formats;
+        String cleanText = extraction.cleanText;
 
         StringBuilder result = new StringBuilder();
         int length = cleanText.length();
@@ -139,7 +142,7 @@ public class TextFormatter {
         return result.toString();
     }
 
-    private static int countNonSpace(String text) {
+    private static int countNonSpace(@NotNull String text) {
         int count = 0;
         for (char c : text.toCharArray()) {
             if (c != ' ') count++;
@@ -147,7 +150,7 @@ public class TextFormatter {
         return Math.max(1, count);
     }
 
-    private static String interpolateColor(String hex1, String hex2, float ratio) {
+    private static @NotNull String interpolateColor(@NotNull String hex1, @NotNull String hex2, float ratio) {
         int r1 = Integer.parseInt(hex1.substring(0, 2), 16);
         int g1 = Integer.parseInt(hex1.substring(2, 4), 16);
         int b1 = Integer.parseInt(hex1.substring(4, 6), 16);
@@ -168,7 +171,7 @@ public class TextFormatter {
         return text;
     }
 
-    private static Component parseLegacyText(String text) {
+    private static @NotNull Component parseLegacyText(@NotNull String text) {
         MutableComponent component = Component.literal("");
         StringBuilder currentText = new StringBuilder();
         Style currentStyle = Style.EMPTY;
@@ -216,7 +219,7 @@ public class TextFormatter {
             }
         }
 
-        // Flush remaining text
+        // Flush the remaining text
         if (!currentText.isEmpty()) {
             component.append(Component.literal(currentText.toString()).setStyle(currentStyle));
         }

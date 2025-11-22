@@ -3,6 +3,7 @@ package lusouzadev.enhancedmotd;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.CommandEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Event handler to handle config reloading.
@@ -23,7 +24,7 @@ public class ServerEventHandler {
      * Intercepts commands to reload config when /reload is used.
      */
     @SubscribeEvent
-    public void onCommand(CommandEvent event) {
+    public void onCommand(@NotNull CommandEvent event) {
         String command = event.getParseResults().getReader().getString();
 
         // Check if this is a reload command

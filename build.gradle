@@ -46,10 +46,8 @@ dependencies {
 runs {
     configureEach {
         workingDirectory = project.file('run')
-        systemProperty 'forge.logging.markers', 'REGISTRIES'
-        systemProperty 'forge.logging.console.level', 'debug'
-
-        modSource project.sourceSets.main
+        systemProperty('forge.logging.markers', 'REGISTRIES')
+        systemProperty('forge.logging.console.level', 'debug')
     }
 
     client {
@@ -61,10 +59,12 @@ runs {
     }
 
     data {
-        arguments.addAll '--mod', project.mod_id,
-            '--all',
-            '--output', file('src/generated/resources/').getAbsolutePath(),
-            '--existing', file('src/main/resources/').getAbsolutePath()
+        arguments.addAll(
+            ['--mod', project.mod_id,
+             '--all',
+             '--output', file('src/generated/resources/').getAbsolutePath(),
+             '--existing', file('src/main/resources/').getAbsolutePath()]
+        )
     }
 }
 
@@ -78,7 +78,7 @@ tasks.withType(ProcessResources).configureEach {
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
-            mod_version            : mod_version,
+            mod_version            : project.version,  // Use actual project version (from Git or fallback)
             mod_authors            : mod_authors,
             mod_description        : mod_description
     ]
@@ -119,8 +119,8 @@ jar {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
-            artifact jar
+        create('mavenJava', MavenPublication) {
+            from(components['java'])
         }
     }
     repositories {
