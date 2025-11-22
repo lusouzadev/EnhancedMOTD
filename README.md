@@ -1,4 +1,4 @@
-![Mod logo with mod name in a straight line](https://raw.githubusercontent.com/lusouzadev/EnhancedMOTD/refs/heads/master/img/logo/line/400x156.png)
+![Mod logo with mod name in a straight line](https://raw.githubusercontent.com/lusouzadev/EnhancedMOTD/refs/heads/main/img/logo/line/400x156.png)
 
 ## Features
 
