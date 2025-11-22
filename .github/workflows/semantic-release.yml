@@ -1,12 +1,14 @@
 name: Semantic Release
 
-on:
-  push:
-    branches:
-      - 'neoforge/1.21.x'
-      - 'neoforge/1.20.x'
-      - 'fabric/1.20.x'
-      - 'fabric/1.19.x'
+# Workflows temporarily disabled
+on: workflow_dispatch
+# on:
+#   push:
+#     branches:
+#       - 'neoforge/1.21.x'
+#       - 'neoforge/1.20.x'
+#       - 'fabric/1.20.x'
+#       - 'fabric/1.19.x'
 
 permissions:
   contents: write  # Required to create tags and releases
