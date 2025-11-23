@@ -23,6 +23,9 @@ jobs:
   release:
     needs: build  # Only run if build succeeds
     runs-on: ubuntu-latest
+    outputs:
+      new_release: ${{ steps.semantic_release.outputs.new_release }}
+      new_tag: ${{ steps.semantic_release.outputs.new_tag }}
 
     steps:
       - name: Checkout repository
@@ -74,13 +77,134 @@ jobs:
           echo "Version suffix: $SUFFIX"
 
       - name: Run Semantic Release
+        id: semantic_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION_SUFFIX: ${{ steps.branch_info.outputs.suffix }}
-        run: npx semantic-release
+        run: |
+          npx semantic-release > semantic-release-output.txt 2>&1
+          cat semantic-release-output.txt
+
+          # Check if a new release was published
+          if grep -q "Published release" semantic-release-output.txt || grep -q "Created tag" semantic-release-output.txt; then
+            echo "new_release=true" >> $GITHUB_OUTPUT
+            # Extract the new version tag from output
+            NEW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+            echo "New release created: $NEW_TAG"
+          else
+            echo "new_release=false" >> $GITHUB_OUTPUT
+            echo "No new release was created"
+          fi
 
       - name: Output result
         if: always()
         run: |
           echo "Semantic release completed for branch ${{ steps.branch_info.outputs.branch }}"
-          echo "Check if a new version was released above"
+          if [[ "${{ steps.semantic_release.outputs.new_release }}" == "true" ]]; then
+            echo "✅ New release: ${{ steps.semantic_release.outputs.new_tag }}"
+          else
+            echo "ℹ️ No new release (no significant commits)"
+          fi
+
+  publish:
+    needs: release  # Only run after release completes
+    if: needs.release.outputs.new_release == 'true'  # Only if a new release was created
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository at new tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.new_tag }}
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Extract Java version from build.gradle
+        id: java-version
+        run: |
+          JAVA_VERSION=$(grep -oP 'java\.toolchain\.languageVersion\s*=\s*JavaLanguageVersion\.of\(\K\d+' build.gradle || echo "21")
+          echo "version=$JAVA_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected Java version: $JAVA_VERSION"
+
+      - name: Set up JDK ${{ steps.java-version.outputs.version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ steps.java-version.outputs.version }}
+          cache: 'gradle'
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build --no-daemon
+
+      - name: Extract version info from tag
+        id: version_info
+        run: |
+          TAG=${{ needs.release.outputs.new_tag }}
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+          # Extract version without 'v' prefix
+          VERSION=${TAG#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Extract loader and MC version from tag
+          SUFFIX=$(echo $TAG | cut -d'+' -f2)
+          echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
+
+          LOADER=$(echo $SUFFIX | cut -d'-' -f1)
+          echo "loader=$LOADER" >> $GITHUB_OUTPUT
+
+          MC_VERSION=$(echo $SUFFIX | cut -d'-' -f2-)
+          echo "mc_version=$MC_VERSION" >> $GITHUB_OUTPUT
+
+          echo "Tag: $TAG"
+          echo "Version: $VERSION"
+          echo "Loader: $LOADER"
+          echo "Minecraft Version: $MC_VERSION"
+
+      - name: Read CHANGELOG
+        id: changelog
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            CHANGELOG=$(awk '/^## \[/{if(++count==2) exit; if(count==1) next} count==1' CHANGELOG.md)
+            CHANGELOG="${CHANGELOG//'%'/'%25'}"
+            CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
+            CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
+            echo "content=$CHANGELOG" >> $GITHUB_OUTPUT
+          else
+            echo "content=Release ${{ steps.version_info.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      # TEMPORARILY DISABLED FOR TESTING - Publishing step commented out
+      # - name: Publish to Modrinth, CurseForge, and GitHub Releases
+      #   uses: Kir-Antipov/mc-publish@v3.3
+      #   with:
+      #     modrinth-id: ${{ secrets.MODRINTH_PROJECT_ID }}
+      #     modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+      #     curseforge-id: ${{ secrets.CURSEFORGE_PROJECT_ID }}
+      #     curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     files: |
+      #       build/libs/!(*-@(dev|sources|javadoc)).jar
+      #     name: ${{ steps.version_info.outputs.version }}
+      #     version: ${{ steps.version_info.outputs.version }}
+      #     version-type: release
+      #     changelog: ${{ steps.changelog.outputs.content }}
+      #     loaders: ${{ steps.version_info.outputs.loader }}
+      #     game-versions: ${{ steps.version_info.outputs.mc_version }}
+
+      - name: Output test info
+        if: success()
+        run: |
+          echo "✅ TEST MODE: Publishing steps are disabled"
+          echo "Tag that was created: ${{ steps.version_info.outputs.tag }}"
+          echo "Version: ${{ steps.version_info.outputs.version }}"
+          echo "Loader: ${{ steps.version_info.outputs.loader }}"
+          echo "Minecraft Version: ${{ steps.version_info.outputs.mc_version }}"
+          echo ""
+          echo "Built artifacts:"
+          ls -lh build/libs/*.jar
