@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1](https://github.com/lusouzadev/EnhancedMOTD/compare/v1.0.0+ci-workflow-update-1.21.1...v1.0.1+ci-workflow-update-1.21.1) (2025-11-23)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** correct publish workflow tag trigger pattern ([e022d0d](https://github.com/lusouzadev/EnhancedMOTD/commit/e022d0d633ebf3563b7826aadff9dc8ccb60922a))
+
 ## 1.0.0 (2025-11-23)
 
 
