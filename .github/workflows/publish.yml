@@ -86,43 +86,48 @@ jobs:
             echo "content=Release ${{ steps.version_info.outputs.version }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish to Modrinth, CurseForge, and GitHub Releases
-        uses: Kir-Antipov/mc-publish@v3.3
-        with:
-          # Modrinth configuration
-          modrinth-id: ${{ secrets.MODRINTH_PROJECT_ID }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+      # TEMPORARILY DISABLED FOR TESTING - Publishing step commented out
+      # - name: Publish to Modrinth, CurseForge, and GitHub Releases
+      #   uses: Kir-Antipov/mc-publish@v3.3
+      #   with:
+      #     # Modrinth configuration
+      #     modrinth-id: ${{ secrets.MODRINTH_PROJECT_ID }}
+      #     modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+      #
+      #     # CurseForge configuration
+      #     curseforge-id: ${{ secrets.CURSEFORGE_PROJECT_ID }}
+      #     curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+      #
+      #     # GitHub Releases configuration
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #
+      #     # File selection - exclude dev, sources, and javadoc jars
+      #     files: |
+      #       build/libs/!(*-@(dev|sources|javadoc)).jar
+      #
+      #     # Version information
+      #     name: ${{ steps.version_info.outputs.version }}
+      #     version: ${{ steps.version_info.outputs.version }}
+      #     version-type: release
+      #
+      #     # Changelog from semantic-release
+      #     changelog: ${{ steps.changelog.outputs.content }}
+      #
+      #     # Loader and game version
+      #     loaders: ${{ steps.version_info.outputs.loader }}
+      #     game-versions: ${{ steps.version_info.outputs.mc_version }}
+      #
+      #     # Dependencies (adjust as needed)
+      #     # java: ${{ steps.java-version.outputs.version }}
 
-          # CurseForge configuration
-          curseforge-id: ${{ secrets.CURSEFORGE_PROJECT_ID }}
-          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-
-          # GitHub Releases configuration
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-          # File selection - exclude dev, sources, and javadoc jars
-          files: |
-            build/libs/!(*-@(dev|sources|javadoc)).jar
-
-          # Version information
-          name: ${{ steps.version_info.outputs.version }}
-          version: ${{ steps.version_info.outputs.version }}
-          version-type: release
-
-          # Changelog from semantic-release
-          changelog: ${{ steps.changelog.outputs.content }}
-
-          # Loader and game version
-          loaders: ${{ steps.version_info.outputs.loader }}
-          game-versions: ${{ steps.version_info.outputs.mc_version }}
-
-          # Dependencies (adjust as needed)
-          # java: ${{ steps.java-version.outputs.version }}
-
-      - name: Output success
+      - name: Output test info
         if: success()
         run: |
-          echo "Successfully published ${{ steps.version_info.outputs.version }} to all platforms!"
-          echo "Modrinth: https://modrinth.com/mod/${{ secrets.MODRINTH_PROJECT_ID }}"
-          echo "CurseForge: https://www.curseforge.com/minecraft/mc-mods/${{ secrets.CURSEFORGE_PROJECT_ID }}"
-          echo "GitHub: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version_info.outputs.tag }}"
+          echo "✅ TEST MODE: Publishing steps are disabled"
+          echo "Tag that was created: ${{ steps.version_info.outputs.tag }}"
+          echo "Version: ${{ steps.version_info.outputs.version }}"
+          echo "Loader: ${{ steps.version_info.outputs.loader }}"
+          echo "Minecraft Version: ${{ steps.version_info.outputs.mc_version }}"
+          echo ""
+          echo "Built artifacts:"
+          ls -lh build/libs/*.jar
