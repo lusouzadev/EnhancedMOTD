@@ -34,6 +34,26 @@ jobs:
           fetch-depth: 0  # Fetch all history for semantic release
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract Java version from build.gradle
+        id: java-version
+        run: |
+          JAVA_VERSION=$(grep -oP 'java\.toolchain\.languageVersion\s*=\s*JavaLanguageVersion\.of\(\K\d+' build.gradle || echo "21")
+          echo "version=$JAVA_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected Java version: $JAVA_VERSION"
+
+      - name: Set up JDK ${{ steps.java-version.outputs.version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ steps.java-version.outputs.version }}
+          cache: 'gradle'
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Build artifacts for release
+        run: ./gradlew build --no-daemon
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
