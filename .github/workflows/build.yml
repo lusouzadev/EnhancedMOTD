@@ -1,55 +1,54 @@
-# Automatically build the project and run any configured tests for every push
-# and submitted a pull request. This can help catch issues that only occur on
-# certain platforms or Java versions and provides a first line of defense
-# against bad commits.
+name: Build & Test
 
-name: Build
-
-# Workflows temporarily disabled
-on: workflow_dispatch
-# on:
-#   push:
-#     branches:
-#       - 'neoforge/**'
-#       - 'fabric/**'
-#   pull_request:
-#     branches:
-#       - 'neoforge/**'
-#       - 'fabric/**'
+on:
+  push:
+    branches:
+      - 'neoforge/**'
+      - 'fabric/**'
+      - 'ci/workflow-update'  # Temporary: testing branch
+  pull_request:
+    branches:
+      - 'neoforge/**'
+      - 'fabric/**'
 
 jobs:
   build:
-    strategy:
-      matrix:
-        # Use Java 21 for 1.21.x, Java 17 for 1.20.x
-        java: [17, 21]
-        # Test on both Linux and Windows
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate gradle wrapper
-        uses: gradle/wrapper-validation-action@v2
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
 
-      - name: Setup JDK ${{ matrix.java }}
+      - name: Extract Java version from build.gradle
+        id: java-version
+        run: |
+          # Extract Java version from java.toolchain.languageVersion in build.gradle
+          JAVA_VERSION=$(grep -oP 'java\.toolchain\.languageVersion\s*=\s*JavaLanguageVersion\.of\(\K\d+' build.gradle || echo "21")
+          echo "version=$JAVA_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected Java version: $JAVA_VERSION"
+
+      - name: Set up JDK ${{ steps.java-version.outputs.version }}
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.java }}
+          java-version: ${{ steps.java-version.outputs.version }}
           cache: 'gradle'
 
-      - name: Make gradle wrapper executable
-        if: runner.os != 'Windows'
+      - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Build
+      - name: Build with Gradle
         run: ./gradlew build --no-daemon
 
-      - name: Capture build artifacts
-        if: runner.os == 'Linux' && matrix.java == '21'
+      - name: Check code formatting
+        run: ./gradlew spotlessCheck --no-daemon
+
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts-java-${{ matrix.java }}
-          path: build/libs/
+          name: build-artifacts
+          path: build/libs/*.jar
+          retention-days: 7
+          if-no-files-found: error

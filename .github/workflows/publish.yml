@@ -1,0 +1,128 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*+*'  # Matches tags like v1.1.0+neoforge-1.21.1
+
+permissions:
+  contents: write  # Required for GitHub Releases
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Extract Java version from build.gradle
+        id: java-version
+        run: |
+          # Extract Java version from java.toolchain.languageVersion in build.gradle
+          JAVA_VERSION=$(grep -oP 'java\.toolchain\.languageVersion\s*=\s*JavaLanguageVersion\.of\(\K\d+' build.gradle || echo "21")
+          echo "version=$JAVA_VERSION" >> $GITHUB_OUTPUT
+          echo "Detected Java version: $JAVA_VERSION"
+
+      - name: Set up JDK ${{ steps.java-version.outputs.version }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ steps.java-version.outputs.version }}
+          cache: 'gradle'
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build --no-daemon
+
+      - name: Extract version info from tag
+        id: version_info
+        run: |
+          # Tag format: v1.1.0+neoforge-1.21.1
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+          # Extract version without 'v' prefix
+          VERSION=${TAG#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Extract loader and MC version from tag
+          # v1.1.0+neoforge-1.21.1 -> neoforge-1.21.1
+          SUFFIX=$(echo $TAG | cut -d'+' -f2)
+          echo "suffix=$SUFFIX" >> $GITHUB_OUTPUT
+
+          # Extract loader (neoforge or fabric)
+          LOADER=$(echo $SUFFIX | cut -d'-' -f1)
+          echo "loader=$LOADER" >> $GITHUB_OUTPUT
+
+          # Extract Minecraft version
+          MC_VERSION=$(echo $SUFFIX | cut -d'-' -f2-)
+          echo "mc_version=$MC_VERSION" >> $GITHUB_OUTPUT
+
+          echo "Tag: $TAG"
+          echo "Version: $VERSION"
+          echo "Loader: $LOADER"
+          echo "Minecraft Version: $MC_VERSION"
+
+      - name: Read CHANGELOG
+        id: changelog
+        run: |
+          # Extract the latest version section from CHANGELOG.md
+          # This assumes semantic-release has already updated CHANGELOG.md
+          if [ -f CHANGELOG.md ]; then
+            # Get content between first two markdown headers (## [...])
+            CHANGELOG=$(awk '/^## \[/{if(++count==2) exit; if(count==1) next} count==1' CHANGELOG.md)
+            # Escape for GitHub Actions output
+            CHANGELOG="${CHANGELOG//'%'/'%25'}"
+            CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
+            CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
+            echo "content=$CHANGELOG" >> $GITHUB_OUTPUT
+          else
+            echo "content=Release ${{ steps.version_info.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Publish to Modrinth, CurseForge, and GitHub Releases
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          # Modrinth configuration
+          modrinth-id: ${{ secrets.MODRINTH_PROJECT_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          # CurseForge configuration
+          curseforge-id: ${{ secrets.CURSEFORGE_PROJECT_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+          # GitHub Releases configuration
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # File selection - exclude dev, sources, and javadoc jars
+          files: |
+            build/libs/!(*-@(dev|sources|javadoc)).jar
+
+          # Version information
+          name: ${{ steps.version_info.outputs.version }}
+          version: ${{ steps.version_info.outputs.version }}
+          version-type: release
+
+          # Changelog from semantic-release
+          changelog: ${{ steps.changelog.outputs.content }}
+
+          # Loader and game version
+          loaders: ${{ steps.version_info.outputs.loader }}
+          game-versions: ${{ steps.version_info.outputs.mc_version }}
+
+          # Dependencies (adjust as needed)
+          # java: ${{ steps.java-version.outputs.version }}
+
+      - name: Output success
+        if: success()
+        run: |
+          echo "Successfully published ${{ steps.version_info.outputs.version }} to all platforms!"
+          echo "Modrinth: https://modrinth.com/mod/${{ secrets.MODRINTH_PROJECT_ID }}"
+          echo "CurseForge: https://www.curseforge.com/minecraft/mc-mods/${{ secrets.CURSEFORGE_PROJECT_ID }}"
+          echo "GitHub: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version_info.outputs.tag }}"
