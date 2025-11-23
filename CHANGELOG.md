@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0](https://github.com/lusouzadev/EnhancedMOTD/compare/v1.0.1+ci-workflow-update-1.21.1...v1.1.0+ci-workflow-update-1.21.1) (2025-11-23)
+
+
+### ✨ Features
+
+* **ci:** integrate publish job into release workflow ([5ba6d24](https://github.com/lusouzadev/EnhancedMOTD/commit/5ba6d24585b29490c49065ba2eab98715735e3e5))
+
 ## [1.0.1](https://github.com/lusouzadev/EnhancedMOTD/compare/v1.0.0+ci-workflow-update-1.21.1...v1.0.1+ci-workflow-update-1.21.1) (2025-11-23)
 
 
