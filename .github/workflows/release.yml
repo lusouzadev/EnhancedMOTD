@@ -102,8 +102,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION_SUFFIX: ${{ steps.branch_info.outputs.suffix }}
         run: |
+          set +e  # Don't exit on error, we want to capture it
           npx semantic-release > semantic-release-output.txt 2>&1
+          SEMANTIC_EXIT_CODE=$?
+          set -e  # Re-enable exit on error
+
           cat semantic-release-output.txt
+          echo "Semantic-release exit code: $SEMANTIC_EXIT_CODE"
+
+          # Check if semantic-release succeeded
+          if [ $SEMANTIC_EXIT_CODE -ne 0 ]; then
+            echo "new_release=false" >> $GITHUB_OUTPUT
+            echo "Semantic-release failed with exit code $SEMANTIC_EXIT_CODE"
+            exit $SEMANTIC_EXIT_CODE
+          fi
 
           # Check if a new release was published
           if grep -q "Published release" semantic-release-output.txt || grep -q "Created tag" semantic-release-output.txt; then
