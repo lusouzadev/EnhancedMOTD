@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.2](https://github.com/lusouzadev/EnhancedMOTD/compare/v1.1.1+ci-workflow-update-1.21.1...v1.1.2+ci-workflow-update-1.21.1) (2025-11-24)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** use proper glob pattern for semantic-release GitHub assets ([bcb5065](https://github.com/lusouzadev/EnhancedMOTD/commit/bcb50654006532e2cf96687927a8a9df99a86d17))
+
 ## [1.1.1](https://github.com/lusouzadev/EnhancedMOTD/compare/v1.1.0+ci-workflow-update-1.21.1...v1.1.1+ci-workflow-update-1.21.1) (2025-11-23)
 
 
