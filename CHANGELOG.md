@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0-beta.1](https://github.com/lusouzadev/EnhancedMOTD/compare/v1.1.2+ci-workflow-update-1.21.1...v1.2.0-beta.1+ci-workflow-update-1.21.1) (2025-11-24)
+
+
+### ✨ Features
+
+* **ci:** configure multi-channel releases for all production branches ([9e9ff88](https://github.com/lusouzadev/EnhancedMOTD/commit/9e9ff881085bda102def2b31b50369cbeaa53022))
+
+
+### 🐛 Bug Fixes
+
+* **ci:** improve semantic-release error handling and logging ([cf17498](https://github.com/lusouzadev/EnhancedMOTD/commit/cf1749852b96f311a1b0977acc33865fba1e1c56))
+* **ci:** use valid semver prerelease identifier for CI branches ([9b672ae](https://github.com/lusouzadev/EnhancedMOTD/commit/9b672aee2a05d8269694e327d715a9baf73176bf))
+
 ## [1.1.2](https://github.com/lusouzadev/EnhancedMOTD/compare/v1.1.1+ci-workflow-update-1.21.1...v1.1.2+ci-workflow-update-1.21.1) (2025-11-24)
 
 
