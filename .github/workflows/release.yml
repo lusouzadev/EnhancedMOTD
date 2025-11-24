@@ -5,7 +5,7 @@ on:
     branches:
       - 'neoforge/**'
       - 'fabric/**'
-      - 'ci/workflow-update'  # Temporary: testing branch
+      - 'ci/**'  # CI/testing branches (creates beta pre-releases)
 
 permissions:
   contents: write  # Required to create tags and releases
@@ -211,7 +211,8 @@ jobs:
             echo "content=Release ${{ steps.version_info.outputs.version }}" >> $GITHUB_OUTPUT
           fi
 
-      # TEMPORARILY DISABLED FOR TESTING - Publishing step commented out
+      # DISABLED: Uncomment when ready to publish to Modrinth/CurseForge
+      # Requires secrets: MODRINTH_PROJECT_ID, MODRINTH_TOKEN, CURSEFORGE_PROJECT_ID, CURSEFORGE_TOKEN
       # - name: Publish to Modrinth, CurseForge, and GitHub Releases
       #   uses: Kir-Antipov/mc-publish@v3.3
       #   with:
@@ -229,14 +230,19 @@ jobs:
       #     loaders: ${{ steps.version_info.outputs.loader }}
       #     game-versions: ${{ steps.version_info.outputs.mc_version }}
 
-      - name: Output test info
+      - name: Build summary
         if: success()
         run: |
-          echo "✅ TEST MODE: Publishing steps are disabled"
-          echo "Tag that was created: ${{ steps.version_info.outputs.tag }}"
-          echo "Version: ${{ steps.version_info.outputs.version }}"
-          echo "Loader: ${{ steps.version_info.outputs.loader }}"
-          echo "Minecraft Version: ${{ steps.version_info.outputs.mc_version }}"
+          echo "✅ Release published successfully!"
           echo ""
-          echo "Built artifacts:"
+          echo "📦 Release Information:"
+          echo "  Tag: ${{ steps.version_info.outputs.tag }}"
+          echo "  Version: ${{ steps.version_info.outputs.version }}"
+          echo "  Loader: ${{ steps.version_info.outputs.loader }}"
+          echo "  Minecraft Version: ${{ steps.version_info.outputs.mc_version }}"
+          echo ""
+          echo "📄 Built artifacts:"
           ls -lh build/libs/*.jar
+          echo ""
+          echo "⚠️  Note: Modrinth/CurseForge publishing is disabled"
+          echo "   GitHub Release created with JAR files ✓"

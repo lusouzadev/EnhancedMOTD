@@ -5,7 +5,7 @@ on:
     branches:
       - 'neoforge/**'
       - 'fabric/**'
-      - 'ci/workflow-update'  # Temporary: testing branch
+      - 'ci/**'  # CI/testing branches (creates beta pre-releases)
   pull_request:
     branches:
       - 'neoforge/**'
