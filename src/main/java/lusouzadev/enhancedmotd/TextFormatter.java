@@ -1,5 +1,7 @@
 package lusouzadev.enhancedmotd;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -7,254 +9,255 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
- * Simple text formatter to replace PlaceholderAPI functionality.
- * Supports Minecraft color codes, basic formatting, and gradients.
+ * Simple text formatter to replace PlaceholderAPI functionality. Supports Minecraft color codes,
+ * basic formatting, and gradients.
  */
 public class TextFormatter {
-    private static final Pattern RAINBOW_PATTERN = Pattern.compile("<rb>(.*?)</rb>");
-    private static final Pattern GRADIENT_PATTERN = Pattern.compile("<gradient:#([0-9a-fA-F]{6}):#([0-9a-fA-F]{6})>(.*?)</gradient>");
+  private static final Pattern RAINBOW_PATTERN = Pattern.compile("<rb>(.*?)</rb>");
+  private static final Pattern GRADIENT_PATTERN =
+      Pattern.compile("<gradient:#([0-9a-fA-F]{6}):#([0-9a-fA-F]{6})>(.*?)</gradient>");
 
-    public static Component formatText(String text) {
-        if (text == null || text.isEmpty()) {
-            return Component.literal("");
-        }
-
-        // First, process gradients and rainbow
-        text = processGradients(text);
-
-        // Then convert hex colors to Minecraft format
-        text = convertHexColors(text);
-
-        // Finally convert legacy color codes
-        return parseLegacyText(text);
+  public static Component formatText(String text) {
+    if (text == null || text.isEmpty()) {
+      return Component.literal("");
     }
 
-    private static @NotNull String processGradients(String text) {
-        // Process custom gradients first
-        Matcher gradientMatcher = GRADIENT_PATTERN.matcher(text);
-        StringBuilder result = new StringBuilder();
+    // First, process gradients and rainbow
+    text = processGradients(text);
 
-        while (gradientMatcher.find()) {
-            String startHex = gradientMatcher.group(1);
-            String endHex = gradientMatcher.group(2);
-            String content = gradientMatcher.group(3);
-            String replacement = applyGradient(content, startHex, endHex);
-            gradientMatcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
-        }
-        gradientMatcher.appendTail(result);
-        text = result.toString();
+    // Then convert hex colors to Minecraft format
+    text = convertHexColors(text);
 
-        // Process rainbow gradients
-        Matcher rainbowMatcher = RAINBOW_PATTERN.matcher(text);
-        result = new StringBuilder();
+    // Finally convert legacy color codes
+    return parseLegacyText(text);
+  }
 
-        while (rainbowMatcher.find()) {
-            String content = rainbowMatcher.group(1);
-            String replacement = applyRainbow(content);
-            rainbowMatcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
-        }
-        rainbowMatcher.appendTail(result);
+  private static @NotNull String processGradients(String text) {
+    // Process custom gradients first
+    Matcher gradientMatcher = GRADIENT_PATTERN.matcher(text);
+    StringBuilder result = new StringBuilder();
 
-        return result.toString();
+    while (gradientMatcher.find()) {
+      String startHex = gradientMatcher.group(1);
+      String endHex = gradientMatcher.group(2);
+      String content = gradientMatcher.group(3);
+      String replacement = applyGradient(content, startHex, endHex);
+      gradientMatcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
+    }
+    gradientMatcher.appendTail(result);
+    text = result.toString();
+
+    // Process rainbow gradients
+    Matcher rainbowMatcher = RAINBOW_PATTERN.matcher(text);
+    result = new StringBuilder();
+
+    while (rainbowMatcher.find()) {
+      String content = rainbowMatcher.group(1);
+      String replacement = applyRainbow(content);
+      rainbowMatcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
+    }
+    rainbowMatcher.appendTail(result);
+
+    return result.toString();
+  }
+
+  private record FormattingExtraction(String formats, String cleanText) {}
+
+  private static @NotNull FormattingExtraction extractFormatting(@NotNull String text) {
+    StringBuilder formats = new StringBuilder();
+    String cleanText = text;
+
+    while (cleanText.length() >= 2
+        && cleanText.charAt(0) == '&'
+        && "klmnor".indexOf(cleanText.charAt(1)) >= 0) {
+      formats.append(cleanText, 0, 2);
+      cleanText = cleanText.substring(2);
     }
 
-    private record FormattingExtraction(String formats, String cleanText) {
+    return new FormattingExtraction(formats.toString(), cleanText);
+  }
+
+  private static @NotNull String applyRainbow(@NotNull String text) {
+    if (text.isEmpty()) return text;
+
+    FormattingExtraction extraction = extractFormatting(text);
+    String formats = extraction.formats;
+    String cleanText = extraction.cleanText;
+
+    // Rainbow colors: Red -> Orange -> Yellow -> Green -> Blue -> Purple
+    String[] rainbowColors = {"FF0000", "FF7F00", "FFFF00", "00FF00", "0000FF", "8B00FF"};
+
+    StringBuilder result = new StringBuilder();
+    int length = cleanText.length();
+    int charIndex = 0; // Index for non-space characters
+
+    for (int i = 0; i < length; i++) {
+      char c = cleanText.charAt(i);
+      if (c == ' ') {
+        result.append(c);
+        continue;
+      }
+
+      // Calculate position in rainbow (0.0 to 1.0) based on non-space characters
+      float position = (float) charIndex / Math.max(1, countNonSpace(cleanText) - 1);
+      int colorIndex = (int) (position * (rainbowColors.length - 1));
+      float localPos = (position * (rainbowColors.length - 1)) - colorIndex;
+
+      String color1 = rainbowColors[Math.min(colorIndex, rainbowColors.length - 1)];
+      String color2 = rainbowColors[Math.min(colorIndex + 1, rainbowColors.length - 1)];
+
+      String interpolatedColor = interpolateColor(color1, color2, localPos);
+      result.append("&#").append(interpolatedColor).append(formats).append(c);
+      charIndex++;
     }
 
-    private static @NotNull FormattingExtraction extractFormatting(@NotNull String text) {
-        StringBuilder formats = new StringBuilder();
-        String cleanText = text;
+    return result.toString();
+  }
 
-        while (cleanText.length() >= 2 && cleanText.charAt(0) == '&' &&
-               "klmnor".indexOf(cleanText.charAt(1)) >= 0) {
-            formats.append(cleanText, 0, 2);
-            cleanText = cleanText.substring(2);
-        }
+  private static @NotNull String applyGradient(
+      @NotNull String text, String startHex, String endHex) {
+    if (text.isEmpty()) return text;
 
-        return new FormattingExtraction(formats.toString(), cleanText);
+    FormattingExtraction extraction = extractFormatting(text);
+    String formats = extraction.formats;
+    String cleanText = extraction.cleanText;
+
+    StringBuilder result = new StringBuilder();
+    int length = cleanText.length();
+    int charIndex = 0; // Index for non-space characters
+
+    for (int i = 0; i < length; i++) {
+      char c = cleanText.charAt(i);
+      if (c == ' ') {
+        result.append(c);
+        continue;
+      }
+
+      float position = (float) charIndex / Math.max(1, countNonSpace(cleanText) - 1);
+      String interpolatedColor = interpolateColor(startHex, endHex, position);
+      result.append("&#").append(interpolatedColor).append(formats).append(c);
+      charIndex++;
     }
 
-    private static @NotNull String applyRainbow(@NotNull String text) {
-        if (text.isEmpty()) return text;
+    return result.toString();
+  }
 
-        FormattingExtraction extraction = extractFormatting(text);
-        String formats = extraction.formats;
-        String cleanText = extraction.cleanText;
-
-        // Rainbow colors: Red -> Orange -> Yellow -> Green -> Blue -> Purple
-        String[] rainbowColors = {"FF0000", "FF7F00", "FFFF00", "00FF00", "0000FF", "8B00FF"};
-
-        StringBuilder result = new StringBuilder();
-        int length = cleanText.length();
-        int charIndex = 0; // Index for non-space characters
-
-        for (int i = 0; i < length; i++) {
-            char c = cleanText.charAt(i);
-            if (c == ' ') {
-                result.append(c);
-                continue;
-            }
-
-            // Calculate position in rainbow (0.0 to 1.0) based on non-space characters
-            float position = (float) charIndex / Math.max(1, countNonSpace(cleanText) - 1);
-            int colorIndex = (int) (position * (rainbowColors.length - 1));
-            float localPos = (position * (rainbowColors.length - 1)) - colorIndex;
-
-            String color1 = rainbowColors[Math.min(colorIndex, rainbowColors.length - 1)];
-            String color2 = rainbowColors[Math.min(colorIndex + 1, rainbowColors.length - 1)];
-
-            String interpolatedColor = interpolateColor(color1, color2, localPos);
-            result.append("&#").append(interpolatedColor).append(formats).append(c);
-            charIndex++;
-        }
-
-        return result.toString();
+  private static int countNonSpace(@NotNull String text) {
+    int count = 0;
+    for (char c : text.toCharArray()) {
+      if (c != ' ') count++;
     }
+    return Math.max(1, count);
+  }
 
-    private static @NotNull String applyGradient(@NotNull String text, String startHex, String endHex) {
-        if (text.isEmpty()) return text;
+  private static @NotNull String interpolateColor(
+      @NotNull String hex1, @NotNull String hex2, float ratio) {
+    int r1 = Integer.parseInt(hex1.substring(0, 2), 16);
+    int g1 = Integer.parseInt(hex1.substring(2, 4), 16);
+    int b1 = Integer.parseInt(hex1.substring(4, 6), 16);
 
-        FormattingExtraction extraction = extractFormatting(text);
-        String formats = extraction.formats;
-        String cleanText = extraction.cleanText;
+    int r2 = Integer.parseInt(hex2.substring(0, 2), 16);
+    int g2 = Integer.parseInt(hex2.substring(2, 4), 16);
+    int b2 = Integer.parseInt(hex2.substring(4, 6), 16);
 
-        StringBuilder result = new StringBuilder();
-        int length = cleanText.length();
-        int charIndex = 0; // Index for non-space characters
+    int r = (int) (r1 + (r2 - r1) * ratio);
+    int g = (int) (g1 + (g2 - g1) * ratio);
+    int b = (int) (b1 + (b2 - b1) * ratio);
 
-        for (int i = 0; i < length; i++) {
-            char c = cleanText.charAt(i);
-            if (c == ' ') {
-                result.append(c);
-                continue;
-            }
+    return String.format("%02X%02X%02X", r, g, b);
+  }
 
-            float position = (float) charIndex / Math.max(1, countNonSpace(cleanText) - 1);
-            String interpolatedColor = interpolateColor(startHex, endHex, position);
-            result.append("&#").append(interpolatedColor).append(formats).append(c);
-            charIndex++;
-        }
+  private static String convertHexColors(String text) {
+    // Hex colors are now kept as-is and will be processed in parseLegacyText
+    return text;
+  }
 
-        return result.toString();
-    }
+  private static @NotNull Component parseLegacyText(@NotNull String text) {
+    MutableComponent component = Component.literal("");
+    StringBuilder currentText = new StringBuilder();
+    Style currentStyle = Style.EMPTY;
 
-    private static int countNonSpace(@NotNull String text) {
-        int count = 0;
-        for (char c : text.toCharArray()) {
-            if (c != ' ') count++;
-        }
-        return Math.max(1, count);
-    }
-
-    private static @NotNull String interpolateColor(@NotNull String hex1, @NotNull String hex2, float ratio) {
-        int r1 = Integer.parseInt(hex1.substring(0, 2), 16);
-        int g1 = Integer.parseInt(hex1.substring(2, 4), 16);
-        int b1 = Integer.parseInt(hex1.substring(4, 6), 16);
-
-        int r2 = Integer.parseInt(hex2.substring(0, 2), 16);
-        int g2 = Integer.parseInt(hex2.substring(2, 4), 16);
-        int b2 = Integer.parseInt(hex2.substring(4, 6), 16);
-
-        int r = (int) (r1 + (r2 - r1) * ratio);
-        int g = (int) (g1 + (g2 - g1) * ratio);
-        int b = (int) (b1 + (b2 - b1) * ratio);
-
-        return String.format("%02X%02X%02X", r, g, b);
-    }
-
-    private static String convertHexColors(String text) {
-        // Hex colors are now kept as-is and will be processed in parseLegacyText
-        return text;
-    }
-
-    private static @NotNull Component parseLegacyText(@NotNull String text) {
-        MutableComponent component = Component.literal("");
-        StringBuilder currentText = new StringBuilder();
-        Style currentStyle = Style.EMPTY;
-
-        for (int i = 0; i < text.length(); i++) {
-            // Check for hex color code &#RRGGBB
-            if (i < text.length() - 8 && text.charAt(i) == '&' && text.charAt(i + 1) == '#') {
-                // Flush current text
-                if (!currentText.isEmpty()) {
-                    component.append(Component.literal(currentText.toString()).setStyle(currentStyle));
-                    currentText = new StringBuilder();
-                }
-
-                // Parse hex color and preserve existing formatting
-                String hexColor = text.substring(i + 2, i + 8);
-                try {
-                    int color = Integer.parseInt(hexColor, 16);
-                    // Preserve bold, italic, underlined, strikethrough, obfuscated
-                    currentStyle = Style.EMPTY
-                        .withColor(TextColor.fromRgb(color))
-                        .withBold(currentStyle.isBold())
-                        .withItalic(currentStyle.isItalic())
-                        .withUnderlined(currentStyle.isUnderlined())
-                        .withStrikethrough(currentStyle.isStrikethrough())
-                        .withObfuscated(currentStyle.isObfuscated());
-                    i += 7; // Skip the &#RRGGBB part
-                } catch (NumberFormatException e) {
-                    currentText.append(text.charAt(i));
-                }
-            }
-            // Check for legacy color/format code &X
-            else if (i < text.length() - 1 && text.charAt(i) == '&') {
-                char code = text.charAt(i + 1);
-
-                // Flush current text
-                if (!currentText.isEmpty()) {
-                    component.append(Component.literal(currentText.toString()).setStyle(currentStyle));
-                    currentText = new StringBuilder();
-                }
-
-                currentStyle = getStyleForCode(code, currentStyle);
-                i++; // Skip the code character
-            } else {
-                currentText.append(text.charAt(i));
-            }
-        }
-
-        // Flush the remaining text
+    for (int i = 0; i < text.length(); i++) {
+      // Check for hex color code &#RRGGBB
+      if (i < text.length() - 8 && text.charAt(i) == '&' && text.charAt(i + 1) == '#') {
+        // Flush current text
         if (!currentText.isEmpty()) {
-            component.append(Component.literal(currentText.toString()).setStyle(currentStyle));
+          component.append(Component.literal(currentText.toString()).setStyle(currentStyle));
+          currentText = new StringBuilder();
         }
 
-        return component;
+        // Parse hex color and preserve existing formatting
+        String hexColor = text.substring(i + 2, i + 8);
+        try {
+          int color = Integer.parseInt(hexColor, 16);
+          // Preserve bold, italic, underlined, strikethrough, obfuscated
+          currentStyle =
+              Style.EMPTY
+                  .withColor(TextColor.fromRgb(color))
+                  .withBold(currentStyle.isBold())
+                  .withItalic(currentStyle.isItalic())
+                  .withUnderlined(currentStyle.isUnderlined())
+                  .withStrikethrough(currentStyle.isStrikethrough())
+                  .withObfuscated(currentStyle.isObfuscated());
+          i += 7; // Skip the &#RRGGBB part
+        } catch (NumberFormatException e) {
+          currentText.append(text.charAt(i));
+        }
+      }
+      // Check for legacy color/format code &X
+      else if (i < text.length() - 1 && text.charAt(i) == '&') {
+        char code = text.charAt(i + 1);
+
+        // Flush current text
+        if (!currentText.isEmpty()) {
+          component.append(Component.literal(currentText.toString()).setStyle(currentStyle));
+          currentText = new StringBuilder();
+        }
+
+        currentStyle = getStyleForCode(code, currentStyle);
+        i++; // Skip the code character
+      } else {
+        currentText.append(text.charAt(i));
+      }
     }
 
-    private static Style getStyleForCode(char code, Style currentStyle) {
-        return switch (code) {
-            // Color codes - preserve formatting
-            case '0' -> currentStyle.withColor(ChatFormatting.BLACK);
-            case '1' -> currentStyle.withColor(ChatFormatting.DARK_BLUE);
-            case '2' -> currentStyle.withColor(ChatFormatting.DARK_GREEN);
-            case '3' -> currentStyle.withColor(ChatFormatting.DARK_AQUA);
-            case '4' -> currentStyle.withColor(ChatFormatting.DARK_RED);
-            case '5' -> currentStyle.withColor(ChatFormatting.DARK_PURPLE);
-            case '6' -> currentStyle.withColor(ChatFormatting.GOLD);
-            case '7' -> currentStyle.withColor(ChatFormatting.GRAY);
-            case '8' -> currentStyle.withColor(ChatFormatting.DARK_GRAY);
-            case '9' -> currentStyle.withColor(ChatFormatting.BLUE);
-            case 'a' -> currentStyle.withColor(ChatFormatting.GREEN);
-            case 'b' -> currentStyle.withColor(ChatFormatting.AQUA);
-            case 'c' -> currentStyle.withColor(ChatFormatting.RED);
-            case 'd' -> currentStyle.withColor(ChatFormatting.LIGHT_PURPLE);
-            case 'e' -> currentStyle.withColor(ChatFormatting.YELLOW);
-            case 'f' -> currentStyle.withColor(ChatFormatting.WHITE);
-            // Formatting codes - preserve color
-            case 'k' -> currentStyle.withObfuscated(true);
-            case 'l' -> currentStyle.withBold(true);
-            case 'm' -> currentStyle.withStrikethrough(true);
-            case 'n' -> currentStyle.withUnderlined(true);
-            case 'o' -> currentStyle.withItalic(true);
-            // Reset clears everything
-            case 'r' -> Style.EMPTY;
-            default -> currentStyle;
-        };
+    // Flush the remaining text
+    if (!currentText.isEmpty()) {
+      component.append(Component.literal(currentText.toString()).setStyle(currentStyle));
     }
+
+    return component;
+  }
+
+  private static Style getStyleForCode(char code, Style currentStyle) {
+    return switch (code) {
+        // Color codes - preserve formatting
+      case '0' -> currentStyle.withColor(ChatFormatting.BLACK);
+      case '1' -> currentStyle.withColor(ChatFormatting.DARK_BLUE);
+      case '2' -> currentStyle.withColor(ChatFormatting.DARK_GREEN);
+      case '3' -> currentStyle.withColor(ChatFormatting.DARK_AQUA);
+      case '4' -> currentStyle.withColor(ChatFormatting.DARK_RED);
+      case '5' -> currentStyle.withColor(ChatFormatting.DARK_PURPLE);
+      case '6' -> currentStyle.withColor(ChatFormatting.GOLD);
+      case '7' -> currentStyle.withColor(ChatFormatting.GRAY);
+      case '8' -> currentStyle.withColor(ChatFormatting.DARK_GRAY);
+      case '9' -> currentStyle.withColor(ChatFormatting.BLUE);
+      case 'a' -> currentStyle.withColor(ChatFormatting.GREEN);
+      case 'b' -> currentStyle.withColor(ChatFormatting.AQUA);
+      case 'c' -> currentStyle.withColor(ChatFormatting.RED);
+      case 'd' -> currentStyle.withColor(ChatFormatting.LIGHT_PURPLE);
+      case 'e' -> currentStyle.withColor(ChatFormatting.YELLOW);
+      case 'f' -> currentStyle.withColor(ChatFormatting.WHITE);
+        // Formatting codes - preserve color
+      case 'k' -> currentStyle.withObfuscated(true);
+      case 'l' -> currentStyle.withBold(true);
+      case 'm' -> currentStyle.withStrikethrough(true);
+      case 'n' -> currentStyle.withUnderlined(true);
+      case 'o' -> currentStyle.withItalic(true);
+        // Reset clears everything
+      case 'r' -> Style.EMPTY;
+      default -> currentStyle;
+    };
+  }
 }

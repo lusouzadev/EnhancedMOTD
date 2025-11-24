@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'net.neoforged.gradle.userdev' version '7.0.168'
+    id 'com.diffplug.spotless' version '6.25.0'
 }
 
 // Automated versioning from Git tags
@@ -131,4 +132,23 @@ publishing {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.compilerArgs << '-Xlint:deprecation'
+}
+
+// Code quality with Spotless
+spotless {
+    java {
+        target 'src/**/*.java'
+
+        // Use Google Java Format for consistent formatting
+        googleJavaFormat()
+
+        // Ensure files end with a newline
+        endWithNewline()
+
+        // Remove unused imports
+        removeUnusedImports()
+
+        // Trim trailing whitespace
+        trimTrailingWhitespace()
+    }
 }
