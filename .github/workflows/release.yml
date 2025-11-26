@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Fetch all history for semantic release
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Extract Java version from build.gradle
         id: java-version
@@ -99,7 +99,7 @@ jobs:
       - name: Run Semantic Release
         id: semantic_release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
           VERSION_SUFFIX: ${{ steps.branch_info.outputs.suffix }}
         run: |
           set +e  # Don't exit on error, we want to capture it
