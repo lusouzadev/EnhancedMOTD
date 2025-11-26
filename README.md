@@ -7,6 +7,7 @@
 - **Hex Colors**: Full RGB color support using `&#RRGGBB` format
 - **Legacy Color Codes**: Standard Minecraft color codes (`&a`, `&c`, etc.)
 - **Text Formatting**: Bold (`&l`), italic (`&o`), underline (`&n`), strikethrough (`&m`), obfuscated (`&k`)
+- **Randomized MOTDs**: Configure multiple MOTD options that are randomly selected on each server list ping
 - **Randomized Server Icons**: Optional feature to cycle through multiple server icons (supports local files and HTTPS URLs)
 
 
