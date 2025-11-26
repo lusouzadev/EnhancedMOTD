@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.0](https://github.com/lusouzadev/EnhancedMOTD/compare/v0.0.0+neoforge-1.21.1...v0.1.0+neoforge-1.21.1) (2025-11-26)
+
+
+### ✨ Features
+
+* **release:** add JAR file upload to GitHub releases ([63a0393](https://github.com/lusouzadev/EnhancedMOTD/commit/63a03936bbcd8b2e4e1365e2598b9f4994e92d89))
+
+
+### 📝 Documentation
+
+* add randomized MOTDs feature to README ([472dcfd](https://github.com/lusouzadev/EnhancedMOTD/commit/472dcfdbbc15ef6b06ec6925b93e38a4f089260f))
+
 ## 1.0.0 (2025-11-26)
 
 
