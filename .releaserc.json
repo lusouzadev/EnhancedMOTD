@@ -15,10 +15,6 @@
     {
       "name": "fabric/1.19.x",
       "channel": "fabric-1.19.x"
-    },
-    {
-      "name": "ci/**",
-      "prerelease": "beta"
     }
   ],
   "tagFormat": "v${version}+${process.env.VERSION_SUFFIX}",
@@ -82,10 +78,7 @@
       "@semantic-release/github",
       {
         "assets": [
-          "build/libs/*.jar",
-          "!build/libs/*-sources.jar",
-          "!build/libs/*-javadoc.jar",
-          "!build/libs/*-dev.jar"
+          "build/libs/!(*-@(dev|sources|javadoc)).jar"
         ]
       }
     ]

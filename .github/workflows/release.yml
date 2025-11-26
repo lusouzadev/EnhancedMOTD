@@ -173,6 +173,15 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build --no-daemon
 
+      - name: Upload JAR files to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release.outputs.new_tag }}
+          files: |
+            build/libs/*.jar
+            !build/libs/*-dev.jar
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Extract version info from tag
         id: version_info
         run: |

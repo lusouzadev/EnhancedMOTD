@@ -7,7 +7,7 @@
 - **Hex Colors**: Full RGB color support using `&#RRGGBB` format
 - **Legacy Color Codes**: Standard Minecraft color codes (`&a`, `&c`, etc.)
 - **Text Formatting**: Bold (`&l`), italic (`&o`), underline (`&n`), strikethrough (`&m`), obfuscated (`&k`)
-- **Randomized Server Icons**: Optional feature to cycle through multiple server icons
+- **Randomized Server Icons**: Optional feature to cycle through multiple server icons (supports local files and HTTPS URLs)
 
 
 ## Formatting Guide

@@ -35,3 +35,7 @@ run
 
 #Code inspection
 qodana.yaml
+
+# Node.js
+node_modules/
+package-lock.json
