@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0-beta.2](https://github.com/lusouzadev/EnhancedMOTD/compare/v1.2.0-beta.1+ci-workflow-update-1.21.1...v1.2.0-beta.2+ci-workflow-update-1.21.1) (2025-11-26)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** use PAT to bypass repository rulesets for tag creation ([bccd00f](https://github.com/lusouzadev/EnhancedMOTD/commit/bccd00f424c1cdcff6b4126eeca96f46395650c1))
+
 ## [1.2.0-beta.1](https://github.com/lusouzadev/EnhancedMOTD/compare/v1.1.2+ci-workflow-update-1.21.1...v1.2.0-beta.1+ci-workflow-update-1.21.1) (2025-11-24)
 
 
