@@ -31,8 +31,6 @@ public class StatusResponsePacketMixin {
     private net.minecraft.network.protocol.Packet<?> modifyStatusPacket(net.minecraft.network.protocol.Packet<?> packet) {
         try {
             if (packet instanceof ClientboundStatusResponsePacket) {
-                EnhancedMotd.LOGGER.info("StatusResponsePacketMixin is being applied!");
-
                 // Create a modified status with random MOTD
                 ServerStatus newStatus = new ServerStatus(
                     EnhancedMotd.getEnhancedMotd(),                                                     // description
@@ -43,7 +41,6 @@ public class StatusResponsePacketMixin {
                     this.status.isModded()                                                          // isModded
                 );
 
-                EnhancedMotd.LOGGER.info("Successfully modified server status with random MOTD");
                 return new ClientboundStatusResponsePacket(newStatus);
             }
         } catch (Throwable e) {

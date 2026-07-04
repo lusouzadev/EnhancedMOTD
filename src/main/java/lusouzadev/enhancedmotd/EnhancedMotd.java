@@ -76,7 +76,6 @@ public class EnhancedMotd {
 	}
 
 	public static ServerStatus.Favicon getRandomIcon(@NotNull Random random) {
-		LOGGER.info("Getting random icon");
 		return icons[random.nextInt(icons.length)];
 	}
 

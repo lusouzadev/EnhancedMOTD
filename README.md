@@ -89,8 +89,8 @@ The Config file, found in `./config/enhanced_motd.json`, includes several option
 
 ## Requirements
 
-- NeoForge 21.1+ for Minecraft 1.21.x
-- Java 21+
+- NeoForge 26.1+ for Minecraft 26.1.x
+- Java 25+
 - Server-side only
 
 ## Development

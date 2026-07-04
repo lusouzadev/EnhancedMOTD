@@ -1,12 +1,13 @@
 plugins {
     id 'java'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.0.168'
+    id 'net.neoforged.moddev' version "${moddev_version}"
+    id 'me.modmuss50.mod-publish-plugin' version "${mod_publish_version}"
 }
 
 // Automated versioning from Git tags
-// Tag format: v1.1.0+neoforge-1.21.1 or v1.1.0+fabric-1.21.1
-// JAR output: enhanced-motd-1.1.0+neoforge-1.21.1.jar
+// Tag format: v1.1.0+neoforge-26.1.2
+// JAR output: enhanced-motd-1.1.0+neoforge-26.1.2.jar
 def getVersionFromGit() {
     try {
         // Try to get the exact tag at current commit
@@ -14,7 +15,7 @@ def getVersionFromGit() {
         process.waitFor()
         if (process.exitValue() == 0) {
             def tag = process.text.trim()
-            // Remove 'v' prefix if present (v1.1.0+neoforge-1.21.1 -> 1.1.0+neoforge-1.21.1)
+            // Remove 'v' prefix if present (v1.1.0+neoforge-26.1.2 -> 1.1.0+neoforge-26.1.2)
             return tag.startsWith('v') ? tag.substring(1) : tag
         }
     } catch (Exception ignored) {
@@ -32,39 +33,36 @@ base {
     archivesName = project.archives_base_name
 }
 
-// Mojang ships Java 21 to end users in 1.21.1, so your mod should target Java 21.
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+// Minecraft 26.1 runs on Java 25, so the mod targets Java 25.
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation "net.neoforged:neoforge:${neo_version}"
-}
+neoForge {
+    version = project.neo_version
 
-runs {
-    configureEach {
-        workingDirectory = project.file('run')
-        systemProperty('forge.logging.markers', 'REGISTRIES')
-        systemProperty('forge.logging.console.level', 'debug')
+    runs {
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+        client {
+            client()
+            gameDirectory = file('run')
+        }
+        server {
+            server()
+            gameDirectory = file('run/server')
+            programArgument '--nogui'
+        }
     }
 
-    client {
-        // Client run configuration
-    }
-
-    server {
-        arguments.add '--nogui'
-    }
-
-    data {
-        arguments.addAll(
-            ['--mod', project.mod_id,
-             '--all',
-             '--output', file('src/generated/resources/').getAbsolutePath(),
-             '--existing', file('src/main/resources/').getAbsolutePath()]
-        )
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
     }
 }
 
@@ -96,8 +94,8 @@ tasks.withType(JavaCompile).configureEach {
 
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {
@@ -111,8 +109,8 @@ jar {
                 'Specification-Version'   : '1',
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,
-                'Implementation-Vendor'   : mod_authors,
-                'MixinConfigs'            : 'enhanced_motd.mixins.json'
+                'Implementation-Vendor'   : mod_authors
+                // Mixin configs are registered via neoforge.mods.toml [[mixins]] on NeoForge.
         ])
     }
 }
@@ -128,7 +126,27 @@ publishing {
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-    options.compilerArgs << '-Xlint:deprecation'
+// Publishing to Modrinth / CurseForge (GitHub Releases are handled by semantic-release).
+// Platforms are only configured when their project ID is set in gradle.properties;
+// access tokens are read from MODRINTH_TOKEN / CURSEFORGE_TOKEN at publish time.
+publishMods {
+    file = jar.archiveFile
+    type = STABLE
+    modLoaders.add('neoforge')
+    changelog = providers.environmentVariable('CHANGELOG').getOrElse('See the GitHub release notes.')
+
+    if (project.findProperty('modrinth_id')) {
+        modrinth {
+            projectId = project.modrinth_id
+            accessToken = providers.environmentVariable('MODRINTH_TOKEN')
+            minecraftVersions.add('26.1.2')
+        }
+    }
+    if (project.findProperty('curseforge_id')) {
+        curseforge {
+            projectId = project.curseforge_id
+            accessToken = providers.environmentVariable('CURSEFORGE_TOKEN')
+            minecraftVersions.add('26.1.2')
+        }
+    }
 }
