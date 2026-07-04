@@ -1,8 +1,8 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Report a problem with EnhancedMOTD
 title: ''
-labels: ''
+labels: bug
 assignees: ''
 
 ---
@@ -12,27 +12,32 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1. With config '...'
+2. Reload / restart the server '...'
+3. See error / incorrect MOTD or icon
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+A clear and concise description of what you expected to happen (e.g. how the
+MOTD or server icon should have rendered).
 
 **Screenshots**
-If applicable, add screenshots to help explain your problem.
+If applicable, add a screenshot of the server list entry to help explain the
+problem.
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+**Environment (please complete the following information):**
+ - EnhancedMOTD version: [e.g. 2.0.1]
+ - Minecraft version: [e.g. 26.1.2]
+ - NeoForge version: [e.g. 26.1.2.76]
+ - Server type: [dedicated server / singleplayer / LAN]
+ - Other mods installed: [yes/no — list any that may be relevant]
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+**Logs**
+If applicable, attach the relevant server log (`logs/latest.log`) or a crash
+report. Please use a code block or a paste service rather than a screenshot of
+text.
+
+**Config**
+If relevant, paste the contents of `config/enhanced_motd.json`.
 
 **Additional context**
 Add any other context about the problem here.
